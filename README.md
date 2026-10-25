@@ -35,7 +35,8 @@ See [`.env.example`](.env.example) for the full list.
 
 | Variable | Required | Notes |
 |---|---|---|
-| `DATABASE_URL` | yes | PostgreSQL connection string |
+| `DATABASE_URL` | yes | PostgreSQL connection string used by the app. On serverless use a transaction pooler (Supabase: port `6543`) |
+| `DIRECT_URL` | no | Direct/session connection used by the Prisma CLI (migrate, seed, studio). Falls back to `DATABASE_URL` |
 | `NEXT_PUBLIC_SITE_URL` | production | Canonical URL; used for metadata and the CSRF origin allow-list |
 | `NEXT_PUBLIC_CONTACT_EMAIL` | no | Verified email. Hidden on the site when empty |
 | `NEXT_PUBLIC_CONTACT_WHATSAPP` | no | Digits with country code (`6281…`). Hidden when empty |
@@ -79,7 +80,7 @@ This re-hashes the password (min. 12 characters) and revokes all sessions of tha
 - Sessions: 32-byte random token in an `HttpOnly`, `SameSite=Strict` cookie (`Secure` in production), 8 h lifetime. Only the SHA-256 of the token is stored (`AdminSession`). Logout deletes the row, so the cookie is useless afterwards.
 - Authorization: [`proxy.ts`](proxy.ts) only redirects visitors without a cookie. The real check runs on the server for every admin page ([`app/admin/(protected)/layout.tsx`](app/admin/(protected)/layout.tsx)) and every `/api/admin/*` handler ([`lib/auth/require-admin.ts`](lib/auth/require-admin.ts)).
 - CSRF: mutations require a matching `Origin` header and the custom `X-Terrace-Request: 1` header (set by the Axios client), on top of `SameSite=Strict`.
-- Login rate limit: 5 attempts per IP+username and 30 per IP per 15 minutes. The limiter is **in-memory**, so it is per-process; use a shared store (e.g. Redis) when running several instances or on serverless.
+- Login rate limit: 5 attempts per IP+username and 30 per IP per 15 minutes. Counters live in the `LoginAttempt` table ([`lib/auth/rate-limit.ts`](lib/auth/rate-limit.ts)), so they are shared by every instance, including serverless ones.
 - Input: every write is validated with Zod and mapped field-by-field to Prisma (no mass assignment). External URLs must be `http(s)`; CTA links allow `#anchor`, `/path`, `https:`, `mailto:` and `tel:` only.
 - Errors returned to the browser never include stack traces or database details.
 
@@ -87,15 +88,28 @@ This re-hashes the password (min. 12 characters) and revokes all sessions of tha
 
 Uploads (hero slides, partner logos, badges, portfolio images) go through [`lib/image/process.ts`](lib/image/process.ts):
 
-1. Client: JPEG/PNG/WebP only, max **3 MiB** (original file), preview before upload ([`components/admin/ImageField.tsx`](components/admin/ImageField.tsx)).
-2. Server: session + CSRF check, `Content-Length` and file-size limit (3 MiB → `413`), MIME allow-list **and** magic-byte check, Sharp decode with a 40 MP pixel limit, EXIF-orientation fix, resize (hero 2400 px, logos 600 px, badges 400 px, portfolio 1600 px wide), WebP quality 80. The original is discarded.
+1. Client: JPEG/PNG/WebP only. The browser downscales the picked file to the folder's stored width and re-encodes it as high-quality WebP ([`lib/image/client-resize.ts`](lib/image/client-resize.ts)), then checks the **3 MiB** limit on the result and shows a preview ([`components/admin/ImageField.tsx`](components/admin/ImageField.tsx)). A whole request is capped at 4.4 MiB, below Vercel's 4.5 MB body limit; the portfolio form checks this before sending.
+2. Server: session + CSRF check, `Content-Length` and file-size limit (3 MiB → `413`), MIME allow-list **and** magic-byte check, Sharp decode with a 40 MP pixel limit, EXIF-orientation fix, resize (hero 2400 px, logos 600 px, badges 400 px, portfolio 1600 px wide), WebP quality 90. The original is discarded.
 3. The WebP file is stored under a generated key (`<folder>/<uuid>.webp`); Prisma stores its URL, key and dimensions.
 4. If the database write fails, the new file is deleted. On replacement the old file is deleted only after the database update succeeds. Deletions use the key stored in the database, never client input. Portfolio items hold 1–3 images (`PortfolioImage` rows, first = card thumbnail); each save sends an ordered manifest of kept image ids and new uploads, applied in one database write. Removed or replaced files are deleted after that write succeeds, new files are deleted if it fails, and deleting an item deletes all its files.
 
 Storage is abstracted behind the `ImageStorage` interface ([`lib/storage/`](lib/storage/)):
 
 - **`local`** (default): files are written to `storage/uploads/` (git-ignored, outside `public/`) and served by [`app/media/[...key]/route.ts`](app/media/[...key]/route.ts) as `image/webp` with `nosniff` and a sandboxing CSP. Only keys matching the generated pattern are served, so nothing in that folder can be executed or traversed. **This is not persistent on serverless platforms such as Vercel** (the filesystem is ephemeral and per-instance); use it for development or a single long-lived server with a persistent disk.
-- **`s3`**: any S3-compatible bucket (AWS S3, Cloudflare R2, MinIO). Set `STORAGE_DRIVER=s3`, `S3_BUCKET`, `S3_REGION`, `S3_ENDPOINT` (for non-AWS), `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_FORCE_PATH_STYLE` (MinIO) and `S3_PUBLIC_BASE_URL` (public URL serving the bucket; images are loaded from it directly). The adapter is implemented but **has not been tested against a real bucket**; verify uploads, public reads and deletes before relying on it.
+- **`s3`**: any S3-compatible bucket (Supabase Storage, AWS S3, Cloudflare R2, MinIO). Set `STORAGE_DRIVER=s3`, `S3_BUCKET`, `S3_REGION`, `S3_ENDPOINT` (for non-AWS), `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_FORCE_PATH_STYLE` (MinIO) and `S3_PUBLIC_BASE_URL` (public URL serving the bucket; images are loaded from it directly). The adapter is implemented but **has not been tested against a real bucket**; verify uploads, public reads and deletes before relying on it.
+
+  Supabase Storage: create a **public** bucket, create S3 access keys under Storage → S3 Connection, then set
+
+  ```env
+  STORAGE_DRIVER="s3"
+  S3_BUCKET="<bucket>"
+  S3_REGION="<project region, e.g. ap-southeast-2>"
+  S3_ENDPOINT="https://<project-ref>.storage.supabase.co/storage/v1/s3"
+  S3_FORCE_PATH_STYLE="true"
+  S3_ACCESS_KEY_ID="<access key id>"
+  S3_SECRET_ACCESS_KEY="<secret access key>"
+  S3_PUBLIC_BASE_URL="https://<project-ref>.supabase.co/storage/v1/object/public/<bucket>"
+  ```
 
 ## Content caching
 
@@ -137,7 +151,10 @@ scripts/                  set-admin-password.ts
 Notes:
 
 - The build prerenders `/` from the database. If the database is unreachable at build time the page is built with empty states and refreshes itself within minutes once it is reachable.
-- On Vercel or any serverless platform, use `STORAGE_DRIVER=s3` (local uploads would be lost) and replace the in-memory login rate limiter with a shared store.
+- On Vercel or any serverless platform:
+  - use `STORAGE_DRIVER=s3` (local uploads would be lost);
+  - point `DATABASE_URL` at a transaction pooler (Supabase: port `6543`) and `DIRECT_URL` at the session/direct connection. Each instance keeps a pool of at most 5 connections ([`lib/prisma.ts`](lib/prisma.ts));
+  - run `bun run db:deploy` yourself before deploying a release with new migrations; the build does not migrate.
 - Serve the site over HTTPS only; session cookies are `Secure` in production.
 
 ## Pre-launch content checklist
