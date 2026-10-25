@@ -1,5 +1,5 @@
 import "server-only";
-import { MAX_IMAGE_BYTES } from "@/lib/image/constants";
+import { MAX_IMAGE_BYTES, MAX_REQUEST_BYTES, TOO_LARGE_TOTAL_MESSAGE } from "@/lib/image/constants";
 import { ApiError } from "./errors";
 
 // Room for the text fields and multipart boundaries on top of the images themselves.
@@ -14,8 +14,9 @@ const FIELDS_OVERHEAD_BYTES = 256 * 1024;
 export async function readMultipart(request: Request, { maxFiles = 1 }: { maxFiles?: number } = {}) {
   const length = request.headers.get("content-length");
   if (!length) throw new ApiError(411, "Header Content-Length wajib ada.");
-  if (Number(length) > maxFiles * MAX_IMAGE_BYTES + FIELDS_OVERHEAD_BYTES) {
-    const message = maxFiles > 1 ? "Ukuran total gambar terlalu besar (maks. 3 MB per gambar)." : "Ukuran file maksimal 3 MB.";
+  // Never above the hosting limit, even when the per-file limits would add up to more.
+  if (Number(length) > Math.min(maxFiles * MAX_IMAGE_BYTES + FIELDS_OVERHEAD_BYTES, MAX_REQUEST_BYTES)) {
+    const message = maxFiles > 1 ? TOO_LARGE_TOTAL_MESSAGE : "Ukuran file maksimal 3 MB.";
     throw new ApiError(413, message, { [maxFiles > 1 ? "images" : "image"]: [message] });
   }
 

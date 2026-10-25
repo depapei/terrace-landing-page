@@ -3,15 +3,18 @@
 import { UploadOutlined } from "@ant-design/icons";
 import { Button, Form, Image, Upload } from "antd";
 import { useEffect, useRef, useState } from "react";
-import { ACCEPTED_IMAGE_ACCEPT, validateImageFile } from "@/lib/image/constants";
+import { prepareImageUpload } from "@/lib/image/client-resize";
+import { ACCEPTED_IMAGE_ACCEPT } from "@/lib/image/constants";
+import type { ImageFolder } from "@/lib/storage/types";
 
 /**
- * Ant Design file picker with client-side size/type validation and a local
- * preview. Upload never sends anything itself (beforeUpload returns false):
+ * Ant Design file picker with client-side downscaling, size/type validation
+ * and a local preview. Upload never sends anything itself (beforeUpload returns false):
  * the valid file is handed to the form and submitted with it, and invalid
  * files are never uploaded.
  */
 export function ImageField({
+  folder,
   label,
   file,
   currentUrl,
@@ -19,6 +22,8 @@ export function ImageField({
   required,
   onChange,
 }: {
+  /** Decides the width the picked image is downscaled to before upload. */
+  folder: ImageFolder;
   label: string;
   file: File | null;
   currentUrl?: string | null;
@@ -82,15 +87,11 @@ export function ImageField({
           maxCount={1}
           showUploadList={false}
           beforeUpload={(selected) => {
-            const problem = validateImageFile(selected);
-            setLocalError(problem);
-            if (problem) {
-              updatePreview(null);
-              onChange(null);
-            } else {
-              updatePreview(selected);
-              onChange(selected);
-            }
+            void prepareImageUpload(selected, folder).then(({ file: ready, problem }) => {
+              setLocalError(problem);
+              updatePreview(ready);
+              onChange(ready);
+            });
             return false;
           }}
         >

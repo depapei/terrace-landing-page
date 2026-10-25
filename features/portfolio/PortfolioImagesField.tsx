@@ -5,7 +5,8 @@ import { Button, Form, Image, Upload } from "antd";
 import { useState } from "react";
 import { useFieldArray, useFormState, useWatch, type Control } from "react-hook-form";
 import { TextInput } from "@/components/admin/form-fields";
-import { ACCEPTED_IMAGE_ACCEPT, validateImageFile } from "@/lib/image/constants";
+import { prepareImageUpload } from "@/lib/image/client-resize";
+import { ACCEPTED_IMAGE_ACCEPT } from "@/lib/image/constants";
 import {
   MAX_PORTFOLIO_IMAGES,
   type PortfolioFormInput,
@@ -18,7 +19,7 @@ export type PendingUpload = { file: File; url: string };
 
 /**
  * Ordered list of 1–3 project images. Each slot is an existing image (kept
- * as-is) or a new file validated client-side and sent with the form.
+ * as-is) or a new file downscaled and validated client-side and sent with the form.
  * Upload never sends anything itself (beforeUpload returns false).
  */
 export function PortfolioImagesField({
@@ -39,10 +40,10 @@ export function PortfolioImagesField({
   const byId = new Map(existing.map((image) => [image.id, image]));
 
   // Returns a new slot key for a valid file, or null after showing the problem.
-  function accept(file: File) {
-    const problem = validateImageFile(file);
+  async function accept(picked: File) {
+    const { file, problem } = await prepareImageUpload(picked, "portfolio");
     setLocalError(problem);
-    if (problem) return null;
+    if (!file) return null;
     const key = crypto.randomUUID();
     onUploadsChange(new Map(uploads).set(key, { file, url: URL.createObjectURL(file) }));
     return key;
@@ -57,10 +58,10 @@ export function PortfolioImagesField({
     return next;
   }
 
-  function replace(index: number, file: File) {
-    const problem = validateImageFile(file);
+  async function replace(index: number, picked: File) {
+    const { file, problem } = await prepareImageUpload(picked, "portfolio");
     setLocalError(problem);
-    if (problem) return;
+    if (!file) return;
     const current = values[index];
     const next = release(current.key);
     const key = crypto.randomUUID();
@@ -127,7 +128,7 @@ export function PortfolioImagesField({
                   maxCount={1}
                   showUploadList={false}
                   beforeUpload={(file) => {
-                    replace(index, file);
+                    void replace(index, file);
                     return false;
                   }}
                 >
@@ -163,8 +164,9 @@ export function PortfolioImagesField({
           maxCount={1}
           showUploadList={false}
           beforeUpload={(file) => {
-            const key = accept(file);
-            if (key) append({ key, existingId: null, altText: "" });
+            void accept(file).then((key) => {
+              if (key) append({ key, existingId: null, altText: "" });
+            });
             return false;
           }}
         >

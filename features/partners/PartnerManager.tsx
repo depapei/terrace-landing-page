@@ -108,6 +108,7 @@ function PartnerForm({
     <AntForm onSubmit={onSubmit}>
       <FormError message={formError} />
       <ImageField
+        folder="partners"
         label="Logo"
         required={!partner}
         file={image}

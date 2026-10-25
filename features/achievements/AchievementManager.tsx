@@ -106,6 +106,7 @@ function AchievementForm({
     <AntForm onSubmit={onSubmit}>
       <FormError message={formError} />
       <ImageField
+        folder="achievements"
         label="Gambar badge"
         required={!badge}
         file={image}

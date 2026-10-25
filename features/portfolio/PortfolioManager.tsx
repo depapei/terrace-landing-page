@@ -18,6 +18,7 @@ import { applyServerErrors, toFormData } from "@/components/admin/form-utils";
 import { ResourceManager } from "@/components/admin/ResourceManager";
 import type { StatusLabels } from "@/components/admin/ui";
 import { slugify } from "@/lib/format";
+import { MAX_REQUEST_BYTES, TOO_LARGE_TOTAL_MESSAGE } from "@/lib/image/constants";
 import {
   useCreatePortfolio,
   useDeletePortfolio,
@@ -210,6 +211,13 @@ function PortfolioForm({
       return { upload: field, altText: image.altText };
     });
     payload.append("images", JSON.stringify(manifest));
+
+    // Larger bodies are rejected by the host before the API can explain why.
+    const uploadBytes = [...payload.values()].reduce((sum, v) => sum + (typeof v === "string" ? 0 : v.size), 0);
+    if (uploadBytes > MAX_REQUEST_BYTES - 64 * 1024) {
+      setError("images", { type: "client", message: TOO_LARGE_TOTAL_MESSAGE });
+      return;
+    }
 
     try {
       if (item) await update.mutateAsync({ id: item.id, payload });

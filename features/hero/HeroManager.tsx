@@ -104,6 +104,7 @@ function HeroForm({
     <AntForm onSubmit={onSubmit}>
       <FormError message={formError} />
       <ImageField
+        folder="hero"
         label="Gambar slide"
         required={!slide}
         file={image}

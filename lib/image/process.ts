@@ -2,11 +2,10 @@ import "server-only";
 import sharp from "sharp";
 import { ApiError } from "@/lib/api/errors";
 import { deleteQuietly, getStorage, newImageKey, type ImageFolder } from "@/lib/storage";
-import { MAX_IMAGE_BYTES, validateImageFile } from "./constants";
+import { MAX_IMAGE_BYTES, MAX_IMAGE_WIDTH, validateImageFile } from "./constants";
 
 // Guards against decompression bombs: oversized images fail before full decode.
 const MAX_INPUT_PIXELS = 40_000_000;
-const MAX_WIDTH: Record<ImageFolder, number> = { hero: 2400, partners: 600, achievements: 400, portfolio: 1600 };
 // Full-bleed images are stretched to the viewport; narrower sources upscale visibly.
 const MIN_WIDTH: Partial<Record<ImageFolder, number>> = { hero: 1600 };
 // Stored files are served as-is (next/image is unoptimized), so this is the only lossy pass.
@@ -64,7 +63,7 @@ export async function convertToWebp(file: File, folder: ImageFolder) {
 
     const { data, info } = await image
       .rotate()
-      .resize({ width: MAX_WIDTH[folder], withoutEnlargement: true })
+      .resize({ width: MAX_IMAGE_WIDTH[folder], withoutEnlargement: true })
       .webp({ quality: MASTER_QUALITY, smartSubsample: true, effort: 5 })
       .toBuffer({ resolveWithObject: true });
     return { buffer: data, width: info.width, height: info.height };
