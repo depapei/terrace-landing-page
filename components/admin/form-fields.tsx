@@ -95,6 +95,7 @@ export function TextInput<T extends FieldValues, TOut extends FieldValues>({
           <Component
             {...input}
             id={id}
+            placeholder={input.placeholder ?? `Masukkan ${label.toLocaleLowerCase("id")}`}
             ref={field.ref}
             name={field.name}
             value={(field.value as string | null | undefined) ?? ""}
@@ -130,6 +131,7 @@ export function TextAreaInput<T extends FieldValues, TOut extends FieldValues>({
             autoSize={{ minRows: 3, maxRows: 8 }}
             {...input}
             id={id}
+            placeholder={input.placeholder ?? `Masukkan ${label.toLocaleLowerCase("id")}`}
             ref={field.ref}
             name={field.name}
             value={(field.value as string | null | undefined) ?? ""}
