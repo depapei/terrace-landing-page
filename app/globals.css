@@ -57,6 +57,10 @@
     scroll-behavior: smooth;
     scroll-padding-top: 90px;
   }
+  /* Keep portfolio detail route changes immediate while anchor scrolling stays smooth. */
+  html:has(main > article) {
+    scroll-behavior: auto;
+  }
   body {
     @apply bg-paper text-ink antialiased;
   }
