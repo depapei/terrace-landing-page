@@ -28,6 +28,15 @@ model AdminSession {
   @@index([expiresAt])
 }
 
+/// Login rate-limit buckets, shared by every server instance.
+model LoginAttempt {
+  key     String   @id
+  count   Int
+  resetAt DateTime
+
+  @@index([resetAt])
+}
+
 model HeroSlide {
   id          String   @id @default(cuid())
   title       String?

@@ -10,7 +10,9 @@ export default defineConfig({
     path: "prisma/migrations",
     seed: "bun prisma/seed.ts",
   },
+  // CLI only (migrate, seed, studio): prefer the direct/session connection, since
+  // DATABASE_URL may be a transaction pooler meant for the serverless runtime.
   datasource: {
-    url: process.env.DATABASE_URL ?? "",
+    url: process.env.DIRECT_URL || process.env.DATABASE_URL || "",
   },
 });

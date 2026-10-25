@@ -19,7 +19,7 @@ export const POST = apiHandler(async (request) => {
   const userKey = `login:${ip}:${username.toLowerCase()}`;
   // Per username+IP for brute force, plus a looser per-IP bucket for spraying.
   for (const [key, limit] of [[userKey, 5], [`login-ip:${ip}`, 30]] as const) {
-    const { allowed, retryAfterSec } = checkRateLimit(key, limit, WINDOW_MS);
+    const { allowed, retryAfterSec } = await checkRateLimit(key, limit, WINDOW_MS);
     if (!allowed) {
       throw new ApiError(429, "Terlalu banyak percobaan login. Coba lagi nanti.", undefined, {
         "Retry-After": String(retryAfterSec),
@@ -34,7 +34,7 @@ export const POST = apiHandler(async (request) => {
   const ok = await verifyPassword(admin?.passwordHash ?? null, password);
   if (!admin || !ok) throw new ApiError(401, INVALID);
 
-  resetRateLimit(userKey);
+  await resetRateLimit(userKey);
   await createSession(admin.id);
   return NextResponse.json({ ok: true });
 });
