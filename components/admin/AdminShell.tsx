@@ -32,9 +32,9 @@ export function AdminShell({ username, children }: { username: string; children:
             </span>
           </Link>
           <div className="flex items-center gap-3 text-[13px]">
-            <a href="/" target="_blank" rel="noopener noreferrer" className="text-on-dark hover:text-white">
+            <Link href="/" target="_blank" rel="noopener noreferrer" className="text-on-dark hover:text-white">
               Lihat situs ↗
-            </a>
+            </Link>
             <span className="text-on-dark max-mobile:hidden">{username}</span>
             <button
               type="button"
