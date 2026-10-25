@@ -1,26 +1,148 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* Terrace design tokens (doc/DESIGN.md §3–5). */
+@theme {
+  --color-ink: #1c1c1c;
+  --color-ink-soft: #3c3934;
+  --color-stone: #cac4bb;
+  --color-sand: #ead8ab;
+  --color-sand-light: #f2e4c2;
+  --color-sand-deep: #8b8066;
+  --color-paper: #f7f5f0;
+  --color-muted: #77736d;
+  --color-label: #817a70;
+  --color-line: rgb(28 28 28 / 0.14);
+  --color-line-dark: rgb(255 255 255 / 0.17);
+  --color-on-dark: #bdb8af;
+  --color-on-dark-soft: #a7a198;
+  --color-on-dark-strong: #d0cbc2;
+  --color-hero: #33312d;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  /* DESIGN.md breakpoints: tablet ≤ 900px, mobile ≤ 650px (use with max-*). */
+  --breakpoint-tablet: 56.3125rem;
+  --breakpoint-mobile: 40.6875rem;
+
+  --animate-marquee: marquee 28s linear infinite;
+
+  @keyframes marquee {
+    to {
+      transform: translateX(-50%);
+    }
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@utility container-site {
+  width: min(1160px, calc(100% - 48px));
+  margin-inline: auto;
+  @media (width < 40.6875rem) {
+    width: calc(100% - 36px);
+  }
+}
+
+/* Left/right inset that lines up hero overlays with the content container. */
+@utility hero-inset-x {
+  left: max(24px, calc((100% - 1160px) / 2));
+  right: max(24px, calc((100% - 1160px) / 2));
+  @media (width < 40.6875rem) {
+    left: 22px;
+    right: 22px;
+  }
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 90px;
+  }
+  body {
+    @apply bg-paper text-ink antialiased;
+  }
+  :focus-visible {
+    outline: 2px solid var(--focus-ring, var(--color-ink));
+    outline-offset: 3px;
+  }
+  /* Dark surfaces switch the focus ring to the sand accent for contrast. */
+  .surface-dark {
+    --focus-ring: var(--color-sand);
+  }
+}
+
+/*
+ * Placeholder hero artwork from the original mockup, used only when the CMS
+ * has no active slides. Pseudo-element gradients are impractical as utilities.
+ */
+.hero-art::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgb(15 15 14 / 0.82) 0%, rgb(15 15 14 / 0.55) 40%, rgb(15 15 14 / 0.08) 100%),
+    linear-gradient(0deg, rgb(15 15 14 / 0.42), transparent 45%);
+}
+.art-warehouse {
+  background: linear-gradient(135deg, #756d5e, #b6a78d 48%, #514b42);
+}
+.art-warehouse::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.8;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 11%, rgb(28 28 28 / 0.5) 11.2% 11.7%, transparent 12% 23%),
+    repeating-linear-gradient(0deg, transparent 0 18%, rgb(234 216 171 / 0.32) 18.2% 18.7%, transparent 19% 36%);
+  transform: perspective(600px) rotateY(-12deg) scale(1.2);
+}
+.art-dashboard {
+  background: linear-gradient(130deg, #272b2c, #59615e 52%, #9a9686);
+}
+.art-dashboard::before {
+  content: "";
+  position: absolute;
+  width: 58%;
+  height: 66%;
+  top: 17%;
+  right: 7%;
+  border: 1px solid rgb(234 216 171 / 0.7);
+  border-radius: 9px;
+  background: linear-gradient(90deg, rgb(28 28 28 / 0.8), rgb(28 28 28 / 0.35));
+  box-shadow: 0 25px 80px rgb(0 0 0 / 0.28);
+  transform: perspective(900px) rotateY(-10deg) rotateX(3deg);
+}
+.art-team {
+  background: linear-gradient(120deg, #827a6b, #c6b89c 55%, #5b5b50);
+}
+.art-team::before {
+  content: "";
+  position: absolute;
+  width: 48%;
+  height: 74%;
+  right: 7%;
+  bottom: -6%;
+  opacity: 0.75;
+  background:
+    radial-gradient(ellipse at 50% 18%, #282725 0 10%, transparent 10.5%),
+    radial-gradient(ellipse at 50% 68%, #282725 0 24%, transparent 24.5%),
+    radial-gradient(ellipse at 22% 20%, #4c4941 0 9%, transparent 9.5%),
+    radial-gradient(ellipse at 22% 70%, #4c4941 0 23%, transparent 23.5%);
+}
+
+/* Edge fade for the partner marquee. */
+.marquee-mask {
+  mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

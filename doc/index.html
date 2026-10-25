@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#1C1C1C">
+  <meta name="description" content="Terrace membangun website dan software management system untuk membantu bisnis bekerja lebih terstruktur.">
+  <title>Terrace | Digital Solutions for Better Business</title>
+  <style>
+    :root {
+      --ink: #1C1C1C;
+      --stone: #CAC4BB;
+      --sand: #EAD8AB;
+      --paper: #F7F5F0;
+      --muted: #77736D;
+      --line: rgba(28, 28, 28, .14);
+      --max: 1160px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 90px; }
+    body { margin: 0; color: var(--ink); background: var(--paper); font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: inherit; text-decoration: none; }
+    button { font: inherit; }
+    .container { width: min(var(--max), calc(100% - 48px)); margin: 0 auto; }
+
+    /* Sticky navbar. On scroll, switch to the reverse palette. */
+    .topbar { position: sticky; top: 0; z-index: 1000; height: 78px; display: flex; align-items: center; background: var(--paper); color: var(--ink); border-bottom: 1px solid var(--line); transition: background .25s, color .25s, border-color .25s, box-shadow .25s; }
+    .topbar.scrolled { background: var(--ink); color: var(--paper); border-color: rgba(255,255,255,.14); box-shadow: 0 8px 25px rgba(0,0,0,.12); }
+    .nav { display: flex; align-items: center; justify-content: space-between; gap: 28px; }
+    .brand { display: inline-flex; align-items: center; gap: 11px; font-size: 21px; font-weight: 760; letter-spacing: -.8px; white-space: nowrap; }
+    .brand-mark { width: 34px; height: 34px; display: grid; place-items: center; color: var(--sand); background: var(--ink); border-radius: 8px; transition: background .25s, color .25s; }
+    .topbar.scrolled .brand-mark { color: var(--ink); background: var(--sand); }
+    .brand-mark svg { width: 23px; height: 23px; }
+    .nav-links { display: flex; align-items: center; gap: 30px; color: inherit; font-size: 13px; }
+    .nav-links a { opacity: .75; transition: opacity .2s; }
+    .nav-links a:hover { opacity: 1; }
+    .nav-cta, .button { display: inline-flex; align-items: center; justify-content: center; gap: 10px; border: 1px solid var(--ink); border-radius: 6px; padding: 12px 16px; font-size: 13px; font-weight: 650; transition: .2s ease; white-space: nowrap; }
+    .nav-cta { background: var(--ink); color: var(--paper); }
+    .topbar.scrolled .nav-cta { background: var(--sand); color: var(--ink); border-color: var(--sand); }
+    .arrow { font-size: 17px; line-height: 1; }
+
+    /* Full-bleed hero carousel */
+    .hero { position: relative; width: 100%; height: min(720px, calc(100svh - 78px)); min-height: 560px; overflow: hidden; background: #33312d; color: white; }
+    .slides, .slide { position: absolute; inset: 0; }
+    .slide { opacity: 0; visibility: hidden; transition: opacity .7s ease, visibility .7s; }
+    .slide.active { opacity: 1; visibility: visible; }
+    .slide-art { position: absolute; inset: 0; overflow: hidden; }
+    .slide-art::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(15,15,14,.82) 0%, rgba(15,15,14,.55) 40%, rgba(15,15,14,.08) 100%), linear-gradient(0deg, rgba(15,15,14,.42), transparent 45%); }
+    .art-warehouse { background: linear-gradient(135deg, #756d5e, #b6a78d 48%, #514b42); }
+    .art-warehouse::before { content: ""; position: absolute; inset: 0; opacity: .8; background: repeating-linear-gradient(90deg, transparent 0 11%, rgba(28,28,28,.5) 11.2% 11.7%, transparent 12% 23%), repeating-linear-gradient(0deg, transparent 0 18%, rgba(234,216,171,.32) 18.2% 18.7%, transparent 19% 36%); transform: perspective(600px) rotateY(-12deg) scale(1.2); }
+    .art-dashboard { background: linear-gradient(130deg, #272b2c, #59615e 52%, #9a9686); }
+    .art-dashboard::before { content: ""; position: absolute; width: 58%; height: 66%; top: 17%; right: 7%; border: 1px solid rgba(234,216,171,.7); border-radius: 9px; background: linear-gradient(90deg, rgba(28,28,28,.8), rgba(28,28,28,.35)); box-shadow: 0 25px 80px rgba(0,0,0,.28); transform: perspective(900px) rotateY(-10deg) rotateX(3deg); }
+    .art-dashboard::after { content: ""; position: absolute; width: 44%; height: 40%; top: 29%; right: 14%; background: repeating-linear-gradient(0deg, transparent 0 22%, rgba(234,216,171,.22) 22.5% 23%, transparent 23.5% 33%), linear-gradient(90deg, transparent 0 10%, rgba(202,196,187,.55) 10% 11%, transparent 11% 35%, rgba(234,216,171,.65) 35% 36%, transparent 36% 65%, rgba(202,196,187,.55) 65% 66%, transparent 66%); }
+    .art-team { background: linear-gradient(120deg, #827a6b, #c6b89c 55%, #5b5b50); }
+    .art-team::before { content: ""; position: absolute; width: 48%; height: 74%; right: 7%; bottom: -6%; opacity: .75; background: radial-gradient(ellipse at 50% 18%, #282725 0 10%, transparent 10.5%), radial-gradient(ellipse at 50% 68%, #282725 0 24%, transparent 24.5%), radial-gradient(ellipse at 22% 20%, #4c4941 0 9%, transparent 9.5%), radial-gradient(ellipse at 22% 70%, #4c4941 0 23%, transparent 23.5%); }
+    .hero-content { position: absolute; z-index: 3; left: max(24px, calc((100% - var(--max)) / 2)); top: 50%; transform: translateY(-50%); max-width: 600px; padding-right: 28px; transition: opacity .25s, transform .25s; }
+    .hero-content.hidden { opacity: 0; transform: translate(-20px, -50%); pointer-events: none; }
+    .hero-kicker { display: flex; align-items: center; gap: 10px; color: var(--sand); font-size: 11px; font-weight: 750; letter-spacing: 2px; text-transform: uppercase; }
+    .hero-kicker::before { content: ""; width: 28px; height: 1px; background: var(--sand); }
+    .hero h1 { max-width: 590px; margin: 22px 0 20px; font-size: clamp(45px, 6.4vw, 82px); line-height: 1.02; letter-spacing: -4px; font-weight: 620; }
+    .hero-copy { max-width: 460px; color: rgba(255,255,255,.78); font-size: 15px; line-height: 1.85; }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 29px; }
+    .button-light { color: white; border-color: rgba(255,255,255,.48); background: rgba(255,255,255,.05); }
+    .button-light:hover { background: rgba(255,255,255,.15); }
+    .button-sand { color: var(--ink); border-color: var(--sand); background: var(--sand); }
+    .button-sand:hover { background: #f2e4c2; }
+    .hero-bottom { position: absolute; z-index: 4; left: max(24px, calc((100% - var(--max)) / 2)); right: max(24px, calc((100% - var(--max)) / 2)); bottom: 28px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+    .hero-caption { font-size: 11px; letter-spacing: 1px; color: rgba(255,255,255,.68); text-transform: uppercase; }
+    .carousel-controls { display: flex; align-items: center; gap: 10px; }
+    .slide-count { min-width: 55px; color: white; font-size: 12px; font-variant-numeric: tabular-nums; }
+    .slide-progress { width: 100px; height: 2px; background: rgba(255,255,255,.28); }
+    .slide-progress span { display: block; width: 33.333%; height: 100%; background: var(--sand); transition: width .35s; }
+    .carousel-btn { width: 42px; height: 42px; display: grid; place-items: center; border: 1px solid rgba(255,255,255,.45); border-radius: 50%; background: transparent; color: white; cursor: pointer; transition: .2s; }
+    .carousel-btn:hover { color: var(--ink); background: var(--sand); border-color: var(--sand); }
+
+    /* Partner marquee */
+    .partners { padding: 29px 0 34px; overflow: hidden; border-bottom: 1px solid var(--line); }
+    .partners-head { display: flex; justify-content: space-between; gap: 24px; margin-bottom: 23px; }
+    .partners-label { font-size: 10px; letter-spacing: 1.7px; font-weight: 750; text-transform: uppercase; color: #777168; }
+    .partners-note { color: #8A847A; font-size: 11px; }
+    .marquee { overflow: hidden; mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent); }
+    .marquee-track { display: flex; width: max-content; animation: marquee 28s linear infinite; }
+    .marquee:hover .marquee-track { animation-play-state: paused; }
+    .partner-logo { min-width: 190px; padding: 7px 25px; display: flex; align-items: center; justify-content: center; gap: 9px; color: #777168; font-weight: 750; font-size: 15px; letter-spacing: -.4px; }
+    .partner-logo span { width: 23px; height: 23px; display: grid; place-items: center; border: 1px solid #AAA49A; font-size: 10px; font-weight: 600; }
+    @keyframes marquee { to { transform: translateX(-50%); } }
+
+    .section { padding: 100px 0; }
+    .section-head { display: flex; align-items: end; justify-content: space-between; gap: 32px; margin-bottom: 42px; }
+    .section-kicker { color: #817A70; font-size: 11px; font-weight: 750; letter-spacing: 1.7px; text-transform: uppercase; }
+    h2 { font-size: clamp(32px, 4vw, 48px); line-height: 1.12; letter-spacing: -2px; font-weight: 620; margin: 14px 0 0; }
+    .section-desc { max-width: 390px; color: var(--muted); font-size: 14px; line-height: 1.8; margin: 0; }
+    .packages { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .package-card { display: flex; flex-direction: column; min-height: 405px; padding: 32px; border: 1px solid var(--line); border-radius: 9px; background: rgba(255,255,255,.28); }
+    .package-card.featured { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+    .package-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+    .package-label { font-size: 10px; letter-spacing: 1.5px; font-weight: 750; text-transform: uppercase; color: #837D73; }
+    .featured .package-label { color: var(--sand); }
+    .package-badge { padding: 7px 9px; border-radius: 4px; color: var(--ink); background: var(--sand); font-size: 10px; font-weight: 750; }
+    .package-card h3 { font-size: 25px; letter-spacing: -.9px; margin: 26px 0 12px; }
+    .package-desc { color: var(--muted); font-size: 13px; line-height: 1.8; margin: 0; max-width: 430px; }
+    .featured .package-desc { color: #BEB9B0; }
+    .price { margin: 25px 0 23px; font-size: 31px; font-weight: 650; letter-spacing: -1.3px; }
+    .price small { font-size: 12px; font-weight: 500; letter-spacing: 0; color: var(--muted); }
+    .featured .price small { color: #BEB9B0; }
+    .package-features { display: grid; gap: 12px; padding: 20px 0 25px; margin: 0 0 25px; border-top: 1px solid var(--line); list-style: none; }
+    .featured .package-features { border-color: rgba(255,255,255,.17); }
+    .package-features li { display: flex; gap: 10px; color: #666159; font-size: 12px; line-height: 1.5; }
+    .featured .package-features li { color: #D0CBC2; }
+    .package-features li::before { content: "✓"; color: #8B8066; font-weight: 800; }
+    .featured .package-features li::before { color: var(--sand); }
+    .package-card .button { margin-top: auto; align-self: flex-start; }
+    .package-card:not(.featured) .button { color: var(--paper); background: var(--ink); }
+    .package-card:not(.featured) .button:hover { background: #3c3934; }
+    .featured .button { color: var(--ink); background: var(--sand); border-color: var(--sand); }
+
+    .about { background: var(--ink); color: var(--paper); }
+    .about-grid { display: grid; grid-template-columns: .9fr 1.1fr; gap: 90px; align-items: start; }
+    .about .section-kicker { color: var(--sand); }
+    .about h2 { max-width: 470px; }
+    .about-copy { color: #BDB8AF; font-size: 15px; line-height: 1.9; margin: 0 0 22px; }
+    .principles { border-top: 1px solid rgba(255,255,255,.17); }
+    .principle { display: flex; gap: 24px; padding: 19px 0; border-bottom: 1px solid rgba(255,255,255,.17); }
+    .principle-num { color: var(--sand); font-size: 11px; padding-top: 3px; }
+    .principle strong { display: block; font-size: 14px; margin-bottom: 6px; }
+    .principle span { color: #A7A198; font-size: 12px; line-height: 1.6; }
+
+    /* Accessible accordion FAQ */
+    .faq-layout { display: grid; grid-template-columns: .75fr 1.25fr; gap: 75px; align-items: start; }
+    .faq-intro p { color: var(--muted); font-size: 14px; line-height: 1.8; max-width: 300px; }
+    .faq-list { border-top: 1px solid var(--line); }
+    .faq-item { border-bottom: 1px solid var(--line); }
+    .faq-question { width: 100%; padding: 23px 0; border: 0; background: transparent; display: flex; align-items: center; justify-content: space-between; gap: 20px; text-align: left; color: var(--ink); font-size: 14px; font-weight: 650; cursor: pointer; }
+    .faq-plus { width: 27px; height: 27px; flex: 0 0 27px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 50%; font-size: 18px; font-weight: 400; transition: transform .2s, background .2s; }
+    .faq-question[aria-expanded="true"] .faq-plus { transform: rotate(45deg); background: var(--sand); border-color: var(--sand); }
+    .faq-answer { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .25s ease; }
+    .faq-answer > div { overflow: hidden; }
+    .faq-answer p { margin: 0; padding: 0 42px 22px 0; color: var(--muted); font-size: 13px; line-height: 1.85; }
+    .faq-item.open .faq-answer { grid-template-rows: 1fr; }
+
+    .cta-section { padding: 25px 0 90px; }
+    .cta-panel { background: var(--sand); border-radius: 10px; padding: 52px; display: flex; align-items: center; justify-content: space-between; gap: 30px; }
+    .cta-panel h2 { max-width: 560px; font-size: clamp(30px, 4vw, 43px); margin: 0 0 12px; }
+    .cta-panel p { color: #696052; font-size: 14px; margin: 0; line-height: 1.7; }
+    .cta-panel .button { color: var(--paper); background: var(--ink); border-color: var(--ink); }
+
+    /* Reverse-color footer */
+    .footer { background: var(--ink); color: var(--paper); padding: 65px 0 24px; }
+    .footer-main { display: grid; grid-template-columns: 1.35fr .8fr .9fr 1fr; gap: 45px; padding-bottom: 55px; }
+    .footer .brand { margin-bottom: 20px; }
+    .footer .brand-mark { color: var(--ink); background: var(--sand); }
+    .footer-about { max-width: 290px; color: #BDB8AF; font-size: 12px; line-height: 1.85; margin: 0 0 23px; }
+    .footer-heading { margin: 6px 0 21px; font-size: 11px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--sand); }
+    .footer-list { display: grid; gap: 13px; list-style: none; padding: 0; margin: 0; }
+    .footer-list a { color: #C3BEB5; font-size: 12px; transition: color .2s; }
+    .footer-list a:hover { color: white; }
+    .partner-mini { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 19px; }
+    .partner-mini span { padding: 7px 9px; border: 1px solid rgba(255,255,255,.18); color: #D4CFC6; font-size: 10px; border-radius: 4px; }
+    .achievement { display: inline-flex; gap: 8px; align-items: center; padding: 9px 11px; border: 1px solid rgba(234,216,171,.45); border-radius: 5px; color: var(--sand); font-size: 10px; line-height: 1.5; }
+    .achievement-mark { width: 20px; height: 20px; display: grid; place-items: center; border: 1px solid var(--sand); border-radius: 50%; }
+    .footer-bottom { display: flex; justify-content: space-between; align-items: center; gap: 20px; padding-top: 22px; border-top: 1px solid rgba(255,255,255,.14); }
+    .footer-bottom small { color: #938E85; font-size: 10px; }
+    .footer-legal { display: flex; gap: 18px; }
+    .footer-legal a { color: #BDB8AF; font-size: 10px; }
+
+    @media (max-width: 900px) {
+      .nav-links { gap: 16px; }
+      .hero-content { max-width: 560px; }
+      .footer-main { grid-template-columns: 1fr 1fr; gap: 38px; }
+      .about-grid { gap: 45px; }
+      .faq-layout { gap: 40px; }
+    }
+    @media (max-width: 650px) {
+      .container { width: calc(100% - 36px); }
+      .topbar { height: 70px; }
+      .nav-links { display: none; }
+      .nav-cta { padding: 10px 12px; font-size: 11px; }
+      .hero { height: 690px; min-height: 600px; }
+      .hero-content { left: 22px; right: 22px; padding: 0; top: 46%; }
+      .hero h1 { font-size: clamp(44px, 12vw, 62px); letter-spacing: -2.8px; }
+      .hero-copy { font-size: 14px; }
+      .hero-bottom { left: 22px; right: 22px; bottom: 20px; }
+      .hero-caption { max-width: 120px; font-size: 9px; line-height: 1.5; }
+      .slide-progress { width: 50px; }
+      .carousel-btn { width: 36px; height: 36px; }
+      .partner-logo { min-width: 150px; font-size: 13px; }
+      .partners-head { flex-direction: column; gap: 8px; }
+      .section { padding: 70px 0; }
+      .section-head { align-items: start; flex-direction: column; gap: 18px; }
+      .packages { grid-template-columns: 1fr; }
+      .package-card { padding: 25px; min-height: 380px; }
+      .about-grid, .faq-layout { grid-template-columns: 1fr; gap: 32px; }
+      .cta-section { padding: 0 0 65px; }
+      .cta-panel { padding: 28px; align-items: start; flex-direction: column; }
+      .footer { padding-top: 48px; }
+      .footer-main { grid-template-columns: 1fr 1fr; gap: 34px 22px; padding-bottom: 40px; }
+      .footer-bottom { align-items: start; flex-direction: column; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar" id="topbar">
+    <div class="container nav">
+      <a class="brand" href="#home" aria-label="Terrace beranda">
+        <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none"><path d="M5 8H27M10 8V25H22V14H15" stroke="currentColor" stroke-width="3" stroke-linecap="square" stroke-linejoin="miter"/></svg></span>
+        Terrace
+      </a>
+      <nav class="nav-links" aria-label="Navigasi utama">
+        <a href="#paket">Pilih paket</a><a href="#tentang">Tentang kami</a><a href="#prinsip">Prinsip kerja</a><a href="#faq">FAQ</a>
+      </nav>
+      <a class="nav-cta" href="#kontak">Diskusikan proyek <span class="arrow">↗</span></a>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" id="home" aria-label="Terrace introduction carousel">
+      <div class="slides">
+        <article class="slide active" data-slide="0" aria-hidden="false">
+          <div class="slide-art art-warehouse"></div>
+        </article>
+        <article class="slide" data-slide="1" aria-hidden="true">
+          <div class="slide-art art-dashboard"></div>
+        </article>
+        <article class="slide" data-slide="2" aria-hidden="true">
+          <div class="slide-art art-team"></div>
+        </article>
+      </div>
+      <div class="hero-content" id="heroContent">
+        <div class="hero-kicker">PT. Teras Teknologi</div>
+        <h1>Teknologi yang membuat bisnis bergerak lebih baik.</h1>
+        <p class="hero-copy">Kami membantu bisnis membangun website dan sistem manajemen yang sesuai dengan kebutuhan operasional, dari kehadiran digital hingga proses kerja yang kompleks.</p>
+        <div class="hero-actions">
+          <a class="button button-sand" href="#paket">Lihat pilihan paket <span class="arrow">↗</span></a>
+          <a class="button button-light" href="#tentang">Kenali Terrace</a>
+        </div>
+      </div>
+      <div class="hero-bottom">
+        <div class="hero-caption" id="heroCaption">Digital solutions / 01</div>
+        <div class="carousel-controls">
+          <span class="slide-count" id="slideCount">01 / 03</span>
+          <div class="slide-progress" aria-hidden="true"><span id="slideProgress"></span></div>
+          <button class="carousel-btn" id="prevSlide" aria-label="Gambar sebelumnya">←</button>
+          <button class="carousel-btn" id="nextSlide" aria-label="Gambar berikutnya">→</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="partners" aria-label="Mitra Terrace">
+      <div class="container partners-head">
+        <div class="partners-label">Our partners & collaborations</div>
+        <div class="partners-note">Bertumbuh melalui kolaborasi</div>
+      </div>
+      <div class="marquee">
+        <!-- Placeholder identities. Replace with official partner logos after collaboration is confirmed. -->
+        <div class="marquee-track" aria-label="Daftar mitra">
+          <div class="partner-logo"><span>N</span> NORTHSTAR</div>
+          <div class="partner-logo"><span>V</span> VERTEX CO.</div>
+          <div class="partner-logo"><span>O</span> ORBITAL</div>
+          <div class="partner-logo"><span>M</span> MERIDIAN</div>
+          <div class="partner-logo"><span>A</span> ATELIER ONE</div>
+          <div class="partner-logo"><span>N</span> NORTHSTAR</div>
+          <div class="partner-logo"><span>V</span> VERTEX CO.</div>
+          <div class="partner-logo"><span>O</span> ORBITAL</div>
+          <div class="partner-logo"><span>M</span> MERIDIAN</div>
+          <div class="partner-logo"><span>A</span> ATELIER ONE</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="paket">
+      <div class="container">
+        <div class="section-head">
+          <div><div class="section-kicker">Solusi Terrace</div><h2>Pilih paket yang<br>sesuai kebutuhan.</h2></div>
+          <p class="section-desc">Mulai dari website untuk memperkuat kehadiran digital hingga sistem manajemen yang dirancang mengikuti proses bisnis Anda.</p>
+        </div>
+        <div class="packages">
+          <article class="package-card">
+            <div class="package-top"><span class="package-label">Paket 01 / Website</span></div>
+            <h3>Landing Page</h3>
+            <p class="package-desc">Website profesional untuk memperkenalkan bisnis, menampilkan layanan, dan membantu calon pelanggan menghubungi Anda.</p>
+            <div class="price">Rp500 ribu <small>hingga Rp1,5 juta</small></div>
+            <ul class="package-features">
+              <li>Desain responsif untuk mobile dan desktop</li>
+              <li>Struktur konten sesuai identitas bisnis</li>
+              <li>CTA dan integrasi kontak</li>
+              <li>Optimasi dasar SEO dan performa</li>
+            </ul>
+            <a class="button" href="mailto:hello@terrace.tech?subject=Konsultasi%20Paket%20Landing%20Page">Pilih paket <span class="arrow">↗</span></a>
+          </article>
+          <article class="package-card featured">
+            <div class="package-top"><span class="package-label">Paket 02 / Custom system</span><span class="package-badge">By consultation</span></div>
+            <h3>Complex Management System</h3>
+            <p class="package-desc">Sistem khusus untuk operasional bisnis, pengelolaan gudang, inventori, workflow, dashboard, dan kebutuhan integrasi.</p>
+            <div class="price">Harga dinamis <small>sesuai ruang lingkup</small></div>
+            <ul class="package-features">
+              <li>Konsultasi dan analisis kebutuhan wajib</li>
+              <li>Rancangan fitur sesuai alur bisnis</li>
+              <li>Pengelolaan data dan hak akses</li>
+              <li>Estimasi biaya berdasarkan kompleksitas</li>
+            </ul>
+            <a class="button" href="mailto:hello@terrace.tech?subject=Konsultasi%20Management%20System">Jadwalkan konsultasi <span class="arrow">↗</span></a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section about" id="tentang">
+      <div class="container about-grid">
+        <div><div class="section-kicker">Tentang Terrace</div><h2>Berawal dari percakapan. Dibangun dengan tujuan.</h2></div>
+        <div>
+          <p class="about-copy">Terrace berawal dari dua anak muda yang bertukar ide di sebuah teras. Dari percakapan sederhana, muncul gagasan untuk membangun bisnis teknologi yang membantu perusahaan mengelola operasional dengan lebih baik.</p>
+          <p class="about-copy">Nama Terrace membawa semangat kolaborasi, keterbukaan, dan ruang untuk bertukar pikiran. Nilai tersebut menjadi dasar kami dalam merancang setiap solusi.</p>
+          <a class="button button-light" href="#kontak">Kenali Terrace <span class="arrow">↗</span></a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="prinsip">
+      <div class="container">
+        <div class="section-head">
+          <div><div class="section-kicker">Prinsip kerja</div><h2>Dirancang dengan<br>tujuan yang jelas.</h2></div>
+          <p class="section-desc">Setiap solusi dimulai dari memahami proses bisnis. Kami menjaga desain sistem tetap jelas, relevan, dan mudah dikembangkan.</p>
+        </div>
+        <div class="principles">
+          <div class="principle"><span class="principle-num">01</span><div><strong>Pahami prosesnya</strong><span>Kami memulai dengan memahami tantangan dan kebutuhan operasional Anda.</span></div></div>
+          <div class="principle"><span class="principle-num">02</span><div><strong>Bangun dengan terstruktur</strong><span>Alur sistem dirancang agar mudah digunakan dan dirawat seiring perkembangan bisnis.</span></div></div>
+          <div class="principle"><span class="principle-num">03</span><div><strong>Kembangkan bersama</strong><span>Kolaborasi membantu solusi terus menyesuaikan diri dengan kebutuhan nyata.</span></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="faq">
+      <div class="container faq-layout">
+        <div class="faq-intro"><div class="section-kicker">FAQ</div><h2>Pertanyaan yang sering diajukan.</h2><p>Informasi singkat untuk membantu Anda memahami layanan dan proses kerja Terrace.</p></div>
+        <div class="faq-list">
+          <div class="faq-item open">
+            <button class="faq-question" aria-expanded="true" aria-controls="faq-a1" id="faq-q1"><span>Berapa biaya pembuatan landing page?</span><span class="faq-plus" aria-hidden="true">+</span></button>
+            <div class="faq-answer" id="faq-a1" role="region" aria-labelledby="faq-q1"><div><p>Paket landing page berkisar Rp500 ribu hingga Rp1,5 juta. Biaya akhir mengikuti kebutuhan desain, jumlah section, dan fitur yang disepakati.</p></div></div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question" aria-expanded="false" aria-controls="faq-a2" id="faq-q2"><span>Bagaimana menentukan harga management system?</span><span class="faq-plus" aria-hidden="true">+</span></button>
+            <div class="faq-answer" id="faq-a2" role="region" aria-labelledby="faq-q2"><div><p>Harga ditentukan setelah konsultasi. Kami meninjau kebutuhan fitur, peran pengguna, integrasi, kompleksitas data, dan ruang lingkup pengerjaan sebelum memberikan estimasi.</p></div></div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question" aria-expanded="false" aria-controls="faq-a3" id="faq-q3"><span>Apakah website bisa disesuaikan dengan identitas bisnis?</span><span class="faq-plus" aria-hidden="true">+</span></button>
+            <div class="faq-answer" id="faq-a3" role="region" aria-labelledby="faq-q3"><div><p>Ya. Desain, warna, konten, dan struktur halaman disesuaikan dengan kebutuhan serta identitas bisnis Anda.</p></div></div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question" aria-expanded="false" aria-controls="faq-a4" id="faq-q4"><span>Bagaimana proses memulai proyek?</span><span class="faq-plus" aria-hidden="true">+</span></button>
+            <div class="faq-answer" id="faq-a4" role="region" aria-labelledby="faq-q4"><div><p>Mulai dengan menghubungi kami. Setelah itu, kita membahas tujuan proyek, kebutuhan, ruang lingkup, estimasi waktu, dan biaya sebelum pengerjaan dimulai.</p></div></div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question" aria-expanded="false" aria-controls="faq-a5" id="faq-q5"><span>Apakah Terrace menerima integrasi dengan sistem lain?</span><span class="faq-plus" aria-hidden="true">+</span></button>
+            <div class="faq-answer" id="faq-a5" role="region" aria-labelledby="faq-q5"><div><p>Kebutuhan integrasi dapat dibahas saat konsultasi. Kelayakan dan estimasinya bergantung pada sistem yang digunakan serta akses teknis yang tersedia.</p></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta-section" id="kontak">
+      <div class="container">
+        <div class="cta-panel">
+          <div><h2>Punya proses yang ingin dibuat lebih baik?</h2><p>Mari diskusikan kebutuhan website atau sistem operasional bisnis Anda.</p></div>
+          <a class="button" href="mailto:hello@terrace.tech">Hubungi Terrace <span class="arrow">↗</span></a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-main">
+        <div>
+          <a class="brand" href="#home"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none"><path d="M5 8H27M10 8V25H22V14H15" stroke="currentColor" stroke-width="3" stroke-linecap="square" stroke-linejoin="miter"/></svg></span>Terrace</a>
+          <p class="footer-about">PT. Teras Teknologi membantu bisnis membangun website dan software yang mendukung operasional lebih terstruktur.</p>
+          <div class="footer-heading">Mitra penting</div>
+          <div class="partner-mini"><span>Partner Network</span><span>Technology</span><span>Business</span></div>
+          <div class="achievement"><span class="achievement-mark">✓</span><span>Commitment to quality<br>Built around your needs</span></div>
+        </div>
+        <div>
+          <h3 class="footer-heading">Menu halaman</h3>
+          <ul class="footer-list">
+            <li><a href="#home">Beranda</a></li><li><a href="#paket">Pilih paket</a></li><li><a href="#tentang">Tentang kami</a></li><li><a href="#prinsip">Prinsip kerja</a></li><li><a href="#faq">FAQ</a></li><li><a href="#kontak">Kontak</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="footer-heading">Produk & portofolio</h3>
+          <ul class="footer-list">
+            <li><a href="#paket">Website bisnis</a></li><li><a href="#paket">Landing page</a></li><li><a href="#paket">Warehouse management</a></li><li><a href="#paket">Custom management system</a></li><li><a href="#kontak">Ajukan proyek</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="footer-heading">Hubungi kami</h3>
+          <ul class="footer-list">
+            <li><a href="mailto:hello@terrace.tech">hello@terrace.tech</a></li>
+            <li><a href="https://wa.me/6280000000000" target="_blank" rel="noopener noreferrer">WhatsApp: +62 800-0000-0000</a></li>
+            <li><a href="#kontak">Konsultasi proyek ↗</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <small>© <span id="year"></span> PT. Teras Teknologi. All rights reserved.</small>
+        <div class="footer-legal"><a href="#faq">FAQ</a><a href="mailto:hello@terrace.tech">Hubungi kami</a></div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Reverse-color sticky navbar
+    const topbar = document.getElementById('topbar');
+    const updateNavbar = () => topbar.classList.toggle('scrolled', window.scrollY > 24);
+    window.addEventListener('scroll', updateNavbar, { passive: true });
+    updateNavbar();
+
+    // Hero carousel: CTA and intro appear only on the first slide
+    const slides = Array.from(document.querySelectorAll('.slide'));
+    const heroContent = document.getElementById('heroContent');
+    const slideCount = document.getElementById('slideCount');
+    const slideProgress = document.getElementById('slideProgress');
+    const heroCaption = document.getElementById('heroCaption');
+    let currentSlide = 0;
+    let carouselTimer;
+    const captions = ['Digital solutions / 01', 'Systems built around you / 02', 'Better work, together / 03'];
+
+    function showSlide(index) {
+      currentSlide = (index + slides.length) % slides.length;
+      slides.forEach((slide, i) => {
+        const active = i === currentSlide;
+        slide.classList.toggle('active', active);
+        slide.setAttribute('aria-hidden', String(!active));
+      });
+      heroContent.classList.toggle('hidden', currentSlide !== 0);
+      slideCount.textContent = `0${currentSlide + 1} / 0${slides.length}`;
+      slideProgress.style.width = `${((currentSlide + 1) / slides.length) * 100}%`;
+      heroCaption.textContent = captions[currentSlide];
+    }
+    function restartCarousel() {
+      clearInterval(carouselTimer);
+      carouselTimer = setInterval(() => showSlide(currentSlide + 1), 6500);
+    }
+    document.getElementById('prevSlide').addEventListener('click', () => { showSlide(currentSlide - 1); restartCarousel(); });
+    document.getElementById('nextSlide').addEventListener('click', () => { showSlide(currentSlide + 1); restartCarousel(); });
+    const hero = document.querySelector('.hero');
+    hero.addEventListener('mouseenter', () => clearInterval(carouselTimer));
+    hero.addEventListener('mouseleave', restartCarousel);
+    showSlide(0);
+    restartCarousel();
+
+    // FAQ accordion. Keep one answer open at a time.
+    document.querySelectorAll('.faq-question').forEach(button => {
+      button.addEventListener('click', () => {
+        const currentItem = button.closest('.faq-item');
+        const shouldOpen = !currentItem.classList.contains('open');
+        document.querySelectorAll('.faq-item').forEach(item => {
+          item.classList.remove('open');
+          item.querySelector('.faq-question').setAttribute('aria-expanded', 'false');
+        });
+        if (shouldOpen) {
+          currentItem.classList.add('open');
+          button.setAttribute('aria-expanded', 'true');
+        }
+      });
+    });
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>

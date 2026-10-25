@@ -1,36 +1,155 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Terrace — Landing page & CMS
 
-## Getting Started
+Landing page for **Terrace / PT. Teras Teknologi** with an admin CMS for hero slides, solution packages, partners and achievement badges.
 
-First, run the development server:
+**Stack:** Next.js 16 (App Router, Cache Components) · React 19 · TypeScript (strict) · Tailwind CSS v4 · Prisma 7 + PostgreSQL · TanStack Query + Axios · React Hook Form + Zod · Sharp (WebP) · Argon2id.
+
+Design references are in [`doc/`](doc/): [`DESIGN.md`](doc/DESIGN.md) is the design system and [`index.html`](doc/index.html) is the original static mockup.
+
+## Requirements
+
+- [Bun](https://bun.sh) 1.4+ (package manager and script runner) and Node.js 20+
+- PostgreSQL 14+
+
+## Local setup
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+bun install                 # also runs `prisma generate`
+cp .env.example .env        # then fill in DATABASE_URL (see below)
+bun run db:migrate          # applies prisma/migrations to your database
+bun run db:seed             # creates the default admin + two default packages
+bun run dev                 # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+| URL | Purpose |
+|---|---|
+| `/` | Public landing page |
+| `/admin/login` | Admin login |
+| `/admin` | Dashboard (active counts) |
+| `/admin/hero`, `/admin/solutions`, `/admin/partners`, `/admin/achievements` | Content management |
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Environment variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+See [`.env.example`](.env.example) for the full list.
 
-## Learn More
+| Variable | Required | Notes |
+|---|---|---|
+| `DATABASE_URL` | yes | PostgreSQL connection string |
+| `NEXT_PUBLIC_SITE_URL` | production | Canonical URL; used for metadata and the CSRF origin allow-list |
+| `NEXT_PUBLIC_CONTACT_EMAIL` | no | Verified email. Hidden on the site when empty |
+| `NEXT_PUBLIC_CONTACT_WHATSAPP` | no | Digits with country code (`6281…`). Hidden when empty |
+| `SEED_ADMIN_USERNAME` / `SEED_ADMIN_PASSWORD` | no | Override the seeded admin credential |
+| `SEED_ADMIN_RESET_PASSWORD` | no | `true` re-applies the seed password to an existing admin |
+| `STORAGE_DRIVER` | no | `local` (default) or `s3` |
+| `LOCAL_STORAGE_DIR` | no | Upload directory for the local driver (default `./storage/uploads`) |
+| `S3_*` | when `s3` | See [Image storage](#image-storage) |
 
-To learn more about Next.js, take a look at the following resources:
+`NEXT_PUBLIC_*` values are inlined at build time, so rebuild after changing them. Contact placeholders from the mockup (`hello@terrace.tech`, `+62 800-0000-0000`) are intentionally **not** used.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Database
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Schema: [`prisma/schema.prisma`](prisma/schema.prisma). Prisma 7 configuration (datasource URL, migrations path, seed command) lives in [`prisma.config.ts`](prisma.config.ts); it loads `.env` itself.
+- `bun run db:migrate` creates/applies migrations in development (`prisma migrate dev`).
+- `bun run db:deploy` applies committed migrations in production (`prisma migrate deploy`).
+- `bun run db:seed` is **idempotent**: re-running it never duplicates rows and never overwrites content edited in the CMS.
+- `bun run db:studio` opens Prisma Studio.
 
-## Deploy on Vercel
+### What the seeder creates
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Admin `admin`, initial password `t#rrace@2026` (stored only as an Argon2id hash; never logged).
+- **Landing Page**: fixed range Rp500.000–Rp1.500.000, label `Rp500 ribu – Rp1,5 juta`.
+- **Complex Management System**: consultation-based, no prices, label `Wajib konsultasi, harga dinamis`, CTA `Jadwalkan konsultasi`.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The package descriptions and feature lists come from the mockup and are **default/draft content**: review and edit them in `/admin/solutions` before launch. No partners, achievements or hero slides are seeded; the landing page shows designed empty states and the original CSS artwork until real content is added.
+
+## Admin accounts
+
+The seeded credential is for first login only. **Rotate it before exposing the site to the internet:**
+
+```bash
+ADMIN_NEW_PASSWORD='a-long-unique-passphrase' bun run admin:password -- admin
+```
+
+This re-hashes the password (min. 12 characters) and revokes all sessions of that admin. The same command creates a new admin if the username doesn't exist. For new environments you can also set `SEED_ADMIN_PASSWORD` before the first `db:seed`.
+
+### Auth and security model
+
+- Passwords: Argon2id (19 MiB, t=2). Unknown usernames still run a hash verify to avoid timing leaks; login errors are generic.
+- Sessions: 32-byte random token in an `HttpOnly`, `SameSite=Strict` cookie (`Secure` in production), 8 h lifetime. Only the SHA-256 of the token is stored (`AdminSession`). Logout deletes the row, so the cookie is useless afterwards.
+- Authorization: [`proxy.ts`](proxy.ts) only redirects visitors without a cookie. The real check runs on the server for every admin page ([`app/admin/(protected)/layout.tsx`](app/admin/(protected)/layout.tsx)) and every `/api/admin/*` handler ([`lib/auth/require-admin.ts`](lib/auth/require-admin.ts)).
+- CSRF: mutations require a matching `Origin` header and the custom `X-Terrace-Request: 1` header (set by the Axios client), on top of `SameSite=Strict`.
+- Login rate limit: 5 attempts per IP+username and 30 per IP per 15 minutes. The limiter is **in-memory**, so it is per-process; use a shared store (e.g. Redis) when running several instances or on serverless.
+- Input: every write is validated with Zod and mapped field-by-field to Prisma (no mass assignment). External URLs must be `http(s)`; CTA links allow `#anchor`, `/path`, `https:`, `mailto:` and `tel:` only.
+- Errors returned to the browser never include stack traces or database details.
+
+## Image storage
+
+Uploads (hero slides, partner logos, badges) go through [`lib/image/process.ts`](lib/image/process.ts):
+
+1. Client: JPEG/PNG/WebP only, max **3 MiB** (original file), preview before upload ([`components/admin/ImageField.tsx`](components/admin/ImageField.tsx)).
+2. Server: session + CSRF check, `Content-Length` and file-size limit (3 MiB → `413`), MIME allow-list **and** magic-byte check, Sharp decode with a 40 MP pixel limit, EXIF-orientation fix, resize (hero 2400 px, logos 600 px, badges 400 px wide), WebP quality 80. The original is discarded.
+3. The WebP file is stored under a generated key (`<folder>/<uuid>.webp`); Prisma stores its URL, key and dimensions.
+4. If the database write fails, the new file is deleted. On replacement the old file is deleted only after the database update succeeds. Deletions use the key stored in the database, never client input.
+
+Storage is abstracted behind the `ImageStorage` interface ([`lib/storage/`](lib/storage/)):
+
+- **`local`** (default): files are written to `storage/uploads/` (git-ignored, outside `public/`) and served by [`app/media/[...key]/route.ts`](app/media/[...key]/route.ts) as `image/webp` with `nosniff` and a sandboxing CSP. Only keys matching the generated pattern are served, so nothing in that folder can be executed or traversed. **This is not persistent on serverless platforms such as Vercel** (the filesystem is ephemeral and per-instance); use it for development or a single long-lived server with a persistent disk.
+- **`s3`**: any S3-compatible bucket (AWS S3, Cloudflare R2, MinIO). Set `STORAGE_DRIVER=s3`, `S3_BUCKET`, `S3_REGION`, `S3_ENDPOINT` (for non-AWS), `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_FORCE_PATH_STYLE` (MinIO) and `S3_PUBLIC_BASE_URL` (public URL serving the bucket; also added to `next/image` `remotePatterns`). The adapter is implemented but **has not been tested against a real bucket**; verify uploads, public reads and deletes before relying on it.
+
+## Content caching
+
+The landing page reads active rows through [`lib/data/landing.ts`](lib/data/landing.ts) with `'use cache'`, `cacheLife('hours')` and one cache tag per entity. Every CMS mutation calls `revalidateTag(tag, { expire: 0 })`, so the next visit renders fresh content. If the database is unreachable the page still renders (empty states) and retries within minutes.
+
+## Project structure
+
+```
+app/                      routes: landing page, /admin, /api, /media
+components/landing/       Navbar, HeroCarousel, PartnerMarquee, SolutionsSection, AboutSection,
+                          PrinciplesSection, FAQAccordion, ContactCTA, Footer, …
+components/admin/         AdminShell, ResourceManager, ResourceList, Modal, ConfirmDialog, ImageField, form UI
+features/<entity>/        schema.ts (Zod + DTO), service.ts (server logic), hooks.ts (React Query), *Manager.tsx (CMS UI)
+hooks/                    shared client hooks (resource query/mutation factory, media queries)
+lib/                      prisma, axios, query client/keys, auth, storage, image processing, API helpers
+prisma/                   schema, migrations, seed
+scripts/                  set-admin-password.ts
+```
+
+## Scripts
+
+| Command | Description |
+|---|---|
+| `bun run dev` | Development server |
+| `bun run build` | `prisma generate` + production build |
+| `bun run start` | Serve the production build |
+| `bun run lint` | ESLint |
+| `bun run typecheck` | Route type generation + `tsc --noEmit` |
+| `bun run db:migrate` / `db:deploy` / `db:seed` / `db:studio` | Database tasks |
+| `bun run admin:password -- <username>` | Set/rotate an admin password |
+
+## Build and deployment
+
+1. Provision PostgreSQL and set the environment variables (at minimum `DATABASE_URL`, `NEXT_PUBLIC_SITE_URL`, verified contact values).
+2. `bun install && bun run db:deploy && bun run db:seed`
+3. Rotate the admin password (see [Admin accounts](#admin-accounts)).
+4. `bun run build && bun run start` (or deploy to your platform).
+
+Notes:
+
+- The build prerenders `/` from the database. If the database is unreachable at build time the page is built with empty states and refreshes itself within minutes once it is reachable.
+- On Vercel or any serverless platform, use `STORAGE_DRIVER=s3` (local uploads would be lost) and replace the in-memory login rate limiter with a shared store.
+- Serve the site over HTTPS only; session cookies are `Secure` in production.
+
+## Pre-launch content checklist
+
+From [`doc/DESIGN.md` §17](doc/DESIGN.md):
+
+- [ ] Upload final, licensed hero imagery (otherwise the CSS placeholder artwork is shown).
+- [ ] Add only confirmed partners with official logos.
+- [ ] Set the verified email and WhatsApp number.
+- [ ] Add only verified achievements/credentials.
+- [ ] Confirm package prices, inclusions and scope in the CMS.
+- [ ] Add real portfolio links.
+- [ ] Confirm legal company name and copyright wording.
+- [ ] Review Indonesian copy.
+- [ ] Test mobile, tablet, desktop, keyboard navigation and reduced motion.
+- [ ] Check metadata and the social sharing preview.

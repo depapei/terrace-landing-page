@@ -1,0 +1,111 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Admin {
+  id           String         @id @default(cuid())
+  username     String         @unique
+  passwordHash String
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  sessions     AdminSession[]
+}
+
+model AdminSession {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  adminId   String
+  admin     Admin    @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([adminId])
+  @@index([expiresAt])
+}
+
+model HeroSlide {
+  id          String   @id @default(cuid())
+  title       String?
+  subtitle    String?
+  imageUrl    String
+  imageKey    String   @unique
+  imageWidth  Int
+  imageHeight Int
+  altText     String
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isActive, sortOrder])
+}
+
+enum PricingType {
+  FIXED_RANGE
+  CONSULTATION
+}
+
+model SolutionPackage {
+  id           String      @id @default(cuid())
+  name         String
+  slug         String      @unique
+  label        String?
+  badge        String?
+  description  String
+  pricingType  PricingType
+  priceMin     Decimal?    @db.Decimal(14, 0)
+  priceMax     Decimal?    @db.Decimal(14, 0)
+  pricingLabel String
+  pricingNote  String?
+  features     String[]
+  ctaLabel     String
+  ctaUrl       String
+  isFeatured   Boolean     @default(false)
+  sortOrder    Int         @default(0)
+  isActive     Boolean     @default(true)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([isActive, sortOrder])
+}
+
+model Partner {
+  id         String   @id @default(cuid())
+  name       String
+  logoUrl    String
+  logoKey    String   @unique
+  logoWidth  Int
+  logoHeight Int
+  websiteUrl String?
+  altText    String
+  sortOrder  Int      @default(0)
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([isActive, sortOrder])
+}
+
+model AchievementBadge {
+  id            String   @id @default(cuid())
+  name          String
+  description   String?
+  imageUrl      String
+  imageKey      String   @unique
+  imageWidth    Int
+  imageHeight   Int
+  altText       String
+  issuer        String?
+  credentialUrl String?
+  sortOrder     Int      @default(0)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([isActive, sortOrder])
+}
