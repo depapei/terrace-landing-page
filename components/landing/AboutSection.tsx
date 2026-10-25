@@ -1,8 +1,11 @@
+import { generalInquiryMessage, whatsappChatHref } from "@/lib/site-config";
 import { Arrow } from "./BrandMark";
 import { buttonClass } from "./button";
 import { headingClass, Kicker } from "./SectionHeading";
 
 export function AboutSection() {
+  const contactHref = whatsappChatHref(generalInquiryMessage) ?? "#kontak";
+
   return (
     <section
       id="tentang"
@@ -13,12 +16,12 @@ export function AboutSection() {
         <div>
           <Kicker className="text-sand">Tentang Terrace</Kicker>
           <h2 id="tentang-title" className={`${headingClass} max-w-[470px]`}>
-            Berawal dari percakapan. Dibangun dengan tujuan.
+            Berawal dari diskusi. Dibangun dengan tujuan.
           </h2>
         </div>
         <div>
           <p className="mt-0 mb-[22px] text-[15px] leading-[1.9] text-on-dark">
-            Terrace berawal dari dua anak muda yang bertukar ide di sebuah teras. Dari percakapan
+            Terrace berawal dari dua anak muda yang bertukar ide di sebuah teras. Dari diskusi
             sederhana, muncul gagasan untuk membangun bisnis teknologi yang membantu perusahaan
             mengelola operasional dengan lebih baik.
           </p>
@@ -26,8 +29,12 @@ export function AboutSection() {
             Nama Terrace membawa semangat kolaborasi, keterbukaan, dan ruang untuk bertukar
             pikiran. Nilai tersebut menjadi dasar kami dalam merancang setiap solusi.
           </p>
-          <a href="#kontak" className={buttonClass("light")}>
-            Mulai percakapan <Arrow />
+          <a
+            href={contactHref}
+            {...(contactHref.startsWith("https://") && { target: "_blank", rel: "noopener noreferrer" })}
+            className={buttonClass("light")}
+          >
+            Mulai diskusi <Arrow />
           </a>
         </div>
       </div>

@@ -1,8 +1,8 @@
-import { whatsappChatHref } from "@/lib/site-config";
+import { generalInquiryMessage, whatsappChatHref } from "@/lib/site-config";
 
 /** Floating "Butuh bantuan?" WhatsApp shortcut. Renders nothing when no number is configured. */
 export function WhatsAppButton() {
-  const href = whatsappChatHref("Halo Terrace, saya butuh bantuan terkait layanan Anda.");
+  const href = whatsappChatHref(generalInquiryMessage);
   if (!href) return null;
 
   return (

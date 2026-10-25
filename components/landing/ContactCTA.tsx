@@ -1,12 +1,11 @@
-import { siteConfig, primaryContactHref } from "@/lib/site-config";
+import { generalInquiryMessage, primaryContactHref, siteConfig, whatsappChatHref } from "@/lib/site-config";
 import { Arrow } from "./BrandMark";
 import { buttonClass, isExternalHref } from "./button";
 
 export function ContactCTA() {
-  const { emailHref, whatsappHref } = siteConfig.contact;
+  const { emailHref } = siteConfig.contact;
   // Prefer email; fall back to WhatsApp; otherwise show no dead-end button.
-  // const href = emailHref ? primaryContactHref("Konsultasi proyek") : whatsappHref;
-  const href = emailHref ? primaryContactHref("Konsultasi proyek") : whatsappHref;
+  const href = emailHref ? primaryContactHref("Konsultasi kebutuhan bisnis") : whatsappChatHref(generalInquiryMessage);
 
   return (
     <section id="kontak" aria-labelledby="kontak-title" className="pt-[25px] pb-[90px] max-mobile:pt-0 max-mobile:pb-[65px]">

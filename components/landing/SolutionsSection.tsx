@@ -1,6 +1,6 @@
 import { cn } from "@/lib/cn";
 import type { LandingSolution } from "@/lib/data/landing";
-import { primaryContactHref } from "@/lib/site-config";
+import { primaryContactHref, whatsappChatHref, withWhatsAppMessage } from "@/lib/site-config";
 import { Arrow } from "./BrandMark";
 import { buttonClass, isExternalHref } from "./button";
 import { SectionHead } from "./SectionHeading";
@@ -43,7 +43,16 @@ export function SolutionsSection({ solutions }: { solutions: LandingSolution[] }
 
 export function PackageCard({ solution, index }: { solution: LandingSolution; index: number }) {
   const featured = solution.isFeatured;
-  const external = isExternalHref(solution.ctaUrl);
+  const packageMessage = [
+    `Halo Terrace, kami ingin berkonsultasi mengenai paket ${solution.name}.`,
+    `Ringkasan kebutuhan: ${solution.description}`,
+    `Informasi biaya: ${solution.pricingLabel}${solution.pricingNote ? ` (${solution.pricingNote})` : ""}.`,
+    "Mohon informasi mengenai cakupan layanan dan tahapan selanjutnya.",
+  ].join("\n\n");
+  const ctaHref = solution.ctaUrl === "#kontak" || solution.ctaUrl === "/#kontak"
+    ? whatsappChatHref(packageMessage) ?? solution.ctaUrl
+    : withWhatsAppMessage(solution.ctaUrl, packageMessage);
+  const external = isExternalHref(ctaHref);
   const label = solution.label ?? `Paket ${String(index + 1).padStart(2, "0")}`;
 
   return (
@@ -109,7 +118,7 @@ export function PackageCard({ solution, index }: { solution: LandingSolution; in
         </ul>
       )}
       <a
-        href={solution.ctaUrl}
+        href={ctaHref}
         {...(external && { target: "_blank", rel: "noopener noreferrer" })}
         className={buttonClass(featured ? "sand" : "ink", "mt-auto self-start")}
       >

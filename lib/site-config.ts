@@ -25,6 +25,21 @@ export function whatsappChatHref(message: string) {
   return whatsappHref ? `${whatsappHref}?text=${encodeURIComponent(message)}` : null;
 }
 
+/** Add a prefilled message to WhatsApp URLs configured for a specific CTA. */
+export function withWhatsAppMessage(href: string, message: string) {
+  try {
+    const url = new URL(href);
+    if (!["wa.me", "api.whatsapp.com", "web.whatsapp.com"].includes(url.hostname)) return href;
+    url.searchParams.set("text", message);
+    return url.toString();
+  } catch {
+    return href;
+  }
+}
+
+export const generalInquiryMessage =
+  "Halo Terrace, kami ingin berkonsultasi mengenai kebutuhan website atau sistem operasional bisnis. Mohon informasi mengenai tahapan konsultasi.";
+
 /** Primary contact destination: email when configured, otherwise the on-page contact section. */
 export function primaryContactHref(subject?: string) {
   const { emailHref } = siteConfig.contact;
