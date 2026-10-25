@@ -109,3 +109,43 @@ model AchievementBadge {
 
   @@index([isActive, sortOrder])
 }
+
+enum PortfolioType {
+  WEBSITE
+  MOBILE_APP
+  UI_UX_DESIGN
+  OTHER
+}
+
+model PortfolioItem {
+  id          String           @id @default(cuid())
+  title       String
+  slug        String           @unique
+  type        PortfolioType    @default(OTHER)
+  /// Live site or demo; required for WEBSITE (enforced in the app schema).
+  liveUrl     String?
+  description String
+  duration    String
+  sortOrder   Int              @default(0)
+  isActive    Boolean          @default(false)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  images      PortfolioImage[]
+
+  @@index([isActive, sortOrder])
+}
+
+model PortfolioImage {
+  id              String        @id @default(cuid())
+  portfolioItemId String
+  portfolioItem   PortfolioItem @relation(fields: [portfolioItemId], references: [id], onDelete: Cascade)
+  imageUrl        String
+  imageKey        String        @unique
+  imageWidth      Int
+  imageHeight     Int
+  altText         String
+  sortOrder       Int           @default(0)
+  createdAt       DateTime      @default(now())
+
+  @@index([portfolioItemId, sortOrder])
+}

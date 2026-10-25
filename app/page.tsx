@@ -6,6 +6,7 @@ import { HeroCarousel } from "@/components/landing/HeroCarousel";
 import { HeroIntro } from "@/components/landing/HeroIntro";
 import { Navbar } from "@/components/landing/Navbar";
 import { PartnerMarquee } from "@/components/landing/PartnerMarquee";
+import { PortfolioSection } from "@/components/landing/PortfolioSection";
 import { PrinciplesSection } from "@/components/landing/PrinciplesSection";
 import { SolutionsSection } from "@/components/landing/SolutionsSection";
 import { WhatsAppButton } from "@/components/landing/WhatsAppButton";
@@ -21,6 +22,7 @@ export default async function HomePage() {
         <HeroCarousel slides={heroSlides} intro={<HeroIntro />} />
         <PartnerMarquee partners={partners} />
         <SolutionsSection solutions={solutions} />
+        <PortfolioSection />
         <AboutSection />
         <PrinciplesSection />
         <FAQSection />

@@ -18,7 +18,34 @@ export function adminButton(variant: keyof typeof buttonVariants, className?: st
   );
 }
 
-export function StatusBadge({ active }: { active: boolean }) {
+/** Wording for the active/published state of a resource. */
+export type StatusLabels = {
+  on: string;
+  off: string;
+  /** Toggle button text. */
+  activate: string;
+  deactivate: string;
+  /** Past tense, used in toasts. */
+  activated: string;
+  deactivated: string;
+};
+
+export const DEFAULT_STATUS_LABELS: StatusLabels = {
+  on: "Aktif",
+  off: "Nonaktif",
+  activate: "Aktifkan",
+  deactivate: "Nonaktifkan",
+  activated: "diaktifkan",
+  deactivated: "dinonaktifkan",
+};
+
+export function StatusBadge({
+  active,
+  labels = DEFAULT_STATUS_LABELS,
+}: {
+  active: boolean;
+  labels?: StatusLabels;
+}) {
   return (
     <span
       className={cn(
@@ -27,7 +54,7 @@ export function StatusBadge({ active }: { active: boolean }) {
       )}
     >
       <span aria-hidden="true" className={cn("size-1.5 rounded-full", active ? "bg-ink" : "bg-muted")} />
-      {active ? "Aktif" : "Nonaktif"}
+      {active ? labels.on : labels.off}
     </span>
   );
 }

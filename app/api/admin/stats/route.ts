@@ -6,11 +6,12 @@ import { prisma } from "@/lib/prisma";
 export const GET = apiHandler(async (request) => {
   await requireAdmin(request);
   const active = { where: { isActive: true } };
-  const [hero, solutions, partners, achievements] = await Promise.all([
+  const [hero, solutions, portfolio, partners, achievements] = await Promise.all([
     prisma.heroSlide.count(active),
     prisma.solutionPackage.count(active),
+    prisma.portfolioItem.count(active),
     prisma.partner.count(active),
     prisma.achievementBadge.count(active),
   ]);
-  return NextResponse.json({ hero, solutions, partners, achievements });
+  return NextResponse.json({ hero, solutions, portfolio, partners, achievements });
 });

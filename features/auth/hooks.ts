@@ -24,7 +24,13 @@ export function useLogout() {
   });
 }
 
-export type AdminStats = { hero: number; solutions: number; partners: number; achievements: number };
+export type AdminStats = {
+  hero: number;
+  solutions: number;
+  portfolio: number;
+  partners: number;
+  achievements: number;
+};
 
 export function useAdminStats() {
   return useQuery({

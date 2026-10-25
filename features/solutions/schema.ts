@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ctaUrl, optionalText, sortOrder, textField } from "@/lib/validation/common";
+import { ctaUrl, optionalText, slugField, sortOrder, textField } from "@/lib/validation/common";
 
 export const PRICING_TYPES = ["FIXED_RANGE", "CONSULTATION"] as const;
 export type PricingTypeValue = (typeof PRICING_TYPES)[number];
@@ -18,12 +18,7 @@ const price = z.preprocess(
 
 const baseFields = {
   name: textField("Nama paket", 120),
-  slug: z
-    .string()
-    .trim()
-    .min(1, "Slug wajib diisi.")
-    .max(80, "Maksimal 80 karakter.")
-    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Gunakan huruf kecil, angka, dan tanda hubung."),
+  slug: slugField,
   label: optionalText(80),
   badge: optionalText(40),
   description: textField("Deskripsi", 600),

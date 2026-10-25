@@ -8,7 +8,7 @@ import { Modal } from "./Modal";
 import { EmptyState, ErrorState, LoadingRows } from "./QueryState";
 import { ResourceList, type RowView } from "./ResourceList";
 import { useToast } from "./Toast";
-import { adminButton } from "./ui";
+import { adminButton, DEFAULT_STATUS_LABELS, type StatusLabels } from "./ui";
 
 type Item = { id: string; isActive: boolean };
 
@@ -28,7 +28,9 @@ export function ResourceManager<T extends Item>({
   reorder,
   view,
   renderForm,
+  renderView,
   emptyHint,
+  statusLabels = DEFAULT_STATUS_LABELS,
 }: {
   title: string;
   description: string;
@@ -39,10 +41,14 @@ export function ResourceManager<T extends Item>({
   reorder: UseMutationResult<void, Error, string[], unknown>;
   view: (item: T) => RowView;
   renderForm: (props: { item: T | null; onDone: (message: string) => void }) => ReactNode;
+  /** Read-only detail; when given, each row gets a "Lihat" action. */
+  renderView?: (item: T) => ReactNode;
   emptyHint?: ReactNode;
+  statusLabels?: StatusLabels;
 }) {
   const notify = useToast();
   const [form, setForm] = useState<FormState<T>>(null);
+  const [viewing, setViewing] = useState<T | null>(null);
   const [toDelete, setToDelete] = useState<T | null>(null);
 
   const onError = (error: Error) => notify("error", error.message);
@@ -70,6 +76,8 @@ export function ResourceManager<T extends Item>({
           items={query.data}
           view={view}
           reordering={reorder.isPending}
+          statusLabels={statusLabels}
+          onView={renderView && setViewing}
           onEdit={(item) => setForm({ mode: "edit", item })}
           onDelete={setToDelete}
           onToggle={(item) =>
@@ -77,7 +85,10 @@ export function ResourceManager<T extends Item>({
               { id: item.id, isActive: !item.isActive },
               {
                 onSuccess: (updated) =>
-                  notify("success", `${view(updated).title} ${updated.isActive ? "diaktifkan" : "dinonaktifkan"}.`),
+                  notify(
+                    "success",
+                    `${view(updated).title} ${updated.isActive ? statusLabels.activated : statusLabels.deactivated}.`,
+                  ),
                 onError,
               },
             )
@@ -103,6 +114,17 @@ export function ResourceManager<T extends Item>({
             },
           })}
       </Modal>
+
+      {renderView && (
+        <Modal
+          open={viewing !== null}
+          onClose={() => setViewing(null)}
+          title={viewing ? view(viewing).title : ""}
+          size="lg"
+        >
+          {viewing && renderView(viewing)}
+        </Modal>
+      )}
 
       <ConfirmDialog
         open={toDelete !== null}

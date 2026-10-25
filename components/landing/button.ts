@@ -6,6 +6,7 @@ const base =
 const variants = {
   ink: "border-ink bg-ink text-paper hover:bg-ink-soft",
   sand: "border-sand bg-sand text-ink hover:bg-sand-light",
+  outline: "border-ink bg-transparent text-ink hover:bg-ink hover:text-paper",
   light: "border-white/48 bg-white/5 text-white hover:bg-white/15",
 } as const;
 

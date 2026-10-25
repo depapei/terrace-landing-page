@@ -6,7 +6,11 @@ import { MAX_IMAGE_BYTES, validateImageFile } from "./constants";
 
 // Guards against decompression bombs: oversized images fail before full decode.
 const MAX_INPUT_PIXELS = 40_000_000;
-const MAX_WIDTH: Record<ImageFolder, number> = { hero: 2400, partners: 600, achievements: 400 };
+const MAX_WIDTH: Record<ImageFolder, number> = { hero: 2400, partners: 600, achievements: 400, portfolio: 1600 };
+// Full-bleed images are stretched to the viewport; narrower sources upscale visibly.
+const MIN_WIDTH: Partial<Record<ImageFolder, number>> = { hero: 1600 };
+// Stored files are served as-is (next/image is unoptimized), so this is the only lossy pass.
+const MASTER_QUALITY = 90;
 
 export type StoredImage = { key: string; url: string; width: number; height: number };
 
@@ -52,13 +56,20 @@ export async function convertToWebp(file: File, folder: ImageFolder) {
     const meta = await image.metadata();
     if (meta.format !== signature) throw new Error("format mismatch");
 
+    const minWidth = MIN_WIDTH[folder];
+    const { width } = meta.autoOrient;
+    if (minWidth && width < minWidth) {
+      throw invalid(422, `Lebar gambar minimal ${minWidth} px agar tidak buram (saat ini ${width} px).`);
+    }
+
     const { data, info } = await image
       .rotate()
       .resize({ width: MAX_WIDTH[folder], withoutEnlargement: true })
-      .webp({ quality: 80 })
+      .webp({ quality: MASTER_QUALITY, smartSubsample: true, effort: 5 })
       .toBuffer({ resolveWithObject: true });
     return { buffer: data, width: info.width, height: info.height };
-  } catch {
+  } catch (error) {
+    if (error instanceof ApiError) throw error;
     throw invalid(422, "Gambar tidak dapat diproses. Pastikan file tidak rusak dan resolusinya wajar.");
   }
 }
@@ -94,5 +105,37 @@ export async function withStoredImage<T>(
     throw error;
   }
   if (image && previousKey && previousKey !== image.key) await deleteQuietly(previousKey);
+  return result;
+}
+
+/** Stores several images in order. If one fails, the ones already stored are removed. */
+export async function storeImages(files: File[], folder: ImageFolder): Promise<StoredImage[]> {
+  const stored: StoredImage[] = [];
+  try {
+    for (const file of files) stored.push(await storeImage(file, folder));
+  } catch (error) {
+    await Promise.all(stored.map((image) => deleteQuietly(image.key)));
+    throw error;
+  }
+  return stored;
+}
+
+/**
+ * Multi-image variant of withStoredImage: new files are removed if the write
+ * fails; `obsoleteKeys` (replaced or removed images) only after it succeeds.
+ */
+export async function withStoredImages<T>(
+  images: StoredImage[],
+  write: () => Promise<T>,
+  obsoleteKeys: string[] = [],
+) {
+  let result: T;
+  try {
+    result = await write();
+  } catch (error) {
+    await Promise.all(images.map((image) => deleteQuietly(image.key)));
+    throw error;
+  }
+  await Promise.all(obsoleteKeys.map((key) => deleteQuietly(key)));
   return result;
 }

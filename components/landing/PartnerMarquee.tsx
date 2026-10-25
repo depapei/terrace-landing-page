@@ -42,7 +42,7 @@ export function PartnerMarquee({ partners }: { partners: LandingPartner[] }) {
     <section aria-labelledby="partners-label" className="overflow-hidden border-b border-line pt-[29px] pb-[34px]">
       <div className="container-site mb-[23px] flex justify-between gap-6 max-mobile:flex-col max-mobile:gap-2">
         <h2 id="partners-label" className="text-[10px] font-bold uppercase tracking-[1.7px] text-[#777168]">
-          Our partners &amp; collaborations
+          Mitra &amp; kolaborator kami
         </h2>
         <p className="text-[11px] text-[#8a847a]">Bertumbuh melalui kolaborasi</p>
       </div>

@@ -15,6 +15,14 @@ export const textField = (label: string, max: number) =>
 
 export { optionalText };
 
+/** URL slug: lowercase letters, digits and single hyphens. */
+export const slugField = z
+  .string()
+  .trim()
+  .min(1, "Slug wajib diisi.")
+  .max(80, "Maksimal 80 karakter.")
+  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Gunakan huruf kecil, angka, dan tanda hubung.");
+
 /** Absolute http(s) URL for external links (partner websites, credentials). */
 export const externalUrl = z
   .string()

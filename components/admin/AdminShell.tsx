@@ -12,6 +12,7 @@ const nav = [
   { href: "/admin", label: "Dashboard" },
   { href: "/admin/hero", label: "Hero" },
   { href: "/admin/solutions", label: "Solusi & paket" },
+  { href: "/admin/portfolio", label: "Hasil kerja" },
   { href: "/admin/partners", label: "Mitra" },
   { href: "/admin/achievements", label: "Achievement" },
 ] as const;

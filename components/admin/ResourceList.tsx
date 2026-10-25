@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import type { ReactNode } from "react";
-import { adminButton, StatusBadge } from "./ui";
+import { adminButton, DEFAULT_STATUS_LABELS, StatusBadge, type StatusLabels } from "./ui";
 
 type Item = { id: string; isActive: boolean };
 
@@ -23,10 +23,14 @@ export function ResourceList<T extends Item>({
   onDelete,
   onToggle,
   onReorder,
+  onView,
   reordering,
+  statusLabels = DEFAULT_STATUS_LABELS,
 }: {
   items: T[];
   view: (item: T) => RowView;
+  onView?: (item: T) => void;
+  statusLabels?: StatusLabels;
   onEdit: (item: T) => void;
   onDelete: (item: T) => void;
   onToggle: (item: T) => void;
@@ -67,7 +71,7 @@ export function ResourceList<T extends Item>({
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
                 <p className="m-0 truncate font-semibold">{row.title}</p>
-                <StatusBadge active={item.isActive} />
+                <StatusBadge active={item.isActive} labels={statusLabels} />
               </div>
               {row.meta && <div className="mt-1 text-xs text-muted">{row.meta}</div>}
             </div>
@@ -90,8 +94,13 @@ export function ResourceList<T extends Item>({
               >
                 <span aria-hidden="true">↓</span>
               </button>
+              {onView && (
+                <button type="button" className={adminButton("secondary")} onClick={() => onView(item)}>
+                  Lihat
+                </button>
+              )}
               <button type="button" className={adminButton("secondary")} onClick={() => onToggle(item)}>
-                {item.isActive ? "Nonaktifkan" : "Aktifkan"}
+                {item.isActive ? statusLabels.deactivate : statusLabels.activate}
               </button>
               <button type="button" className={adminButton("secondary")} onClick={() => onEdit(item)}>
                 Edit

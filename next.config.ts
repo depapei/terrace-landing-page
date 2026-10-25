@@ -1,8 +1,5 @@
 import type { NextConfig } from "next";
 
-// Allow next/image to optimize S3-hosted uploads when that driver is configured.
-const s3Base = process.env.S3_PUBLIC_BASE_URL ? new URL(process.env.S3_PUBLIC_BASE_URL) : null;
-
 const nextConfig: NextConfig = {
   experimental: {
     agentFeedback: true,
@@ -19,16 +16,9 @@ const nextConfig: NextConfig = {
   },
   serverExternalPackages: ["@node-rs/argon2", "sharp"],
   images: {
-    localPatterns: [{ pathname: "/media/**", search: "" }],
-    remotePatterns: s3Base
-      ? [
-          {
-            protocol: s3Base.protocol.replace(":", "") as "http" | "https",
-            hostname: s3Base.hostname,
-            pathname: `${s3Base.pathname.replace(/\/$/, "")}/**`,
-          },
-        ]
-      : [],
+    // Uploads are already resized and encoded to WebP on upload (lib/image/process.ts);
+    // serve them as-is instead of re-compressing them.
+    unoptimized: true,
   },
   poweredByHeader: false,
   async headers() {

@@ -8,6 +8,7 @@ import { useAdminStats, type AdminStats } from "./hooks";
 const cards: { key: keyof AdminStats; label: string; href: string }[] = [
   { key: "hero", label: "Hero slide aktif", href: "/admin/hero" },
   { key: "solutions", label: "Paket aktif", href: "/admin/solutions" },
+  { key: "portfolio", label: "Hasil kerja terbit", href: "/admin/portfolio" },
   { key: "partners", label: "Mitra aktif", href: "/admin/partners" },
   { key: "achievements", label: "Achievement aktif", href: "/admin/achievements" },
 ];
@@ -23,7 +24,7 @@ export function Dashboard() {
       ) : stats.isError ? (
         <ErrorState message={stats.error.message} onRetry={() => stats.refetch()} />
       ) : (
-        <ul className="m-0 grid list-none gap-3 p-0 sm:grid-cols-2 lg:grid-cols-4">
+        <ul className="m-0 grid list-none gap-3 p-0 sm:grid-cols-2 lg:grid-cols-5">
           {cards.map((card) => (
             <li key={card.key}>
               <Link
