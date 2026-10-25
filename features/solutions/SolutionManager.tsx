@@ -179,7 +179,7 @@ function SolutionForm({
       </div>
       <TextAreaInput control={control} name="description" label="Deskripsi" required />
 
-      <Card size="small" title="Harga" className="mb-6">
+      <Card size="small" title="Harga" style={{ marginBottom: 24 }}>
         <RadioInput control={control} name="pricingType" label="Jenis harga" options={PRICING_OPTIONS} />
         {fixed && (
           <div className="grid gap-x-4 sm:grid-cols-2">
@@ -211,7 +211,7 @@ function SolutionForm({
         </div>
       </Card>
 
-      <Card size="small" title="Fitur" className="mb-6">
+      <Card size="small" title="Fitur" style={{ marginBottom: 24 }}>
         {features.fields.length === 0 && <p className="mt-0 text-xs text-muted">Belum ada fitur.</p>}
         {features.fields.map((field, index) => (
           <div key={field.id} className="flex items-start gap-2">
@@ -222,7 +222,7 @@ function SolutionForm({
               type="text"
               danger
               icon={<DeleteOutlined />}
-              className="mt-[30px]"
+              style={{ marginTop: 30 }}
               onClick={() => features.remove(index)}
               aria-label={`Hapus fitur ${index + 1}`}
             />

@@ -32,7 +32,13 @@ export function AntdProvider({ children }: { children: ReactNode }) {
   return (
     <AntdRegistry>
       <ConfigProvider theme={theme} locale={idID}>
-        <App>{children}</App>
+        {/*
+          component={false}: no wrapper element. antd scopes its base styles
+          (e.g. `:where(.css-…) a { color: colorLink; outline: none }`) to its
+          root class; a wrapper around the whole admin would recolor every
+          non-antd link (the CMS header nav) and drop their focus outline.
+        */}
+        <App component={false}>{children}</App>
       </ConfigProvider>
     </AntdRegistry>
   );

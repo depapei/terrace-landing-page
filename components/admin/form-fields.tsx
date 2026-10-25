@@ -164,7 +164,7 @@ export function NumberInput<T extends FieldValues, TOut extends FieldValues>({
             id={id}
             ref={field.ref}
             name={field.name}
-            className="w-full"
+            style={{ width: "100%" }}
             min={min}
             step={1}
             precision={0}
@@ -200,7 +200,7 @@ export function CheckboxInput<T extends FieldValues, TOut extends FieldValues>({
       control={control}
       name={name}
       render={({ field }) => (
-        <Form.Item extra={hint} className="mb-3">
+        <Form.Item extra={hint} style={{ marginBottom: 12 }}>
           <Checkbox
             ref={field.ref}
             name={field.name}
@@ -244,7 +244,7 @@ export function RadioInput<T extends FieldValues, TOut extends FieldValues>({
 
 export function FormError({ message }: { message?: string | null }) {
   if (!message) return null;
-  return <Alert type="error" showIcon title={message} className="mb-4" />;
+  return <Alert type="error" showIcon title={message} style={{ marginBottom: 16 }} />;
 }
 
 export function SubmitBar({ pending, label = "Simpan" }: { pending: boolean; label?: string }) {
