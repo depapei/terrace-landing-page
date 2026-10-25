@@ -27,7 +27,7 @@ export function Modal({
       footer={null}
       width={WIDTHS[size]}
       destroyOnHidden
-      maskClosable={false}
+      mask={{ closable: true }}
       centered
     >
       {children}

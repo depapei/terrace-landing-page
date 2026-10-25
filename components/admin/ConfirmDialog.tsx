@@ -40,6 +40,7 @@ export function ConfirmDialog({
       width={440}
       centered
       destroyOnHidden
+      mask={{ closable: true }}
     >
       <p className="mt-2 mb-0 text-sm leading-relaxed text-muted">{description}</p>
     </Modal>
