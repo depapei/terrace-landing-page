@@ -48,3 +48,5 @@ next-env.d.ts
 
 # local image uploads (STORAGE_DRIVER=local)
 /storage
+
+doc/*
