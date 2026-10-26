@@ -30,6 +30,9 @@ export const metadata: Metadata = {
     title: siteConfig.title,
     description: siteConfig.description,
   },
+  verification:{
+    google: "WmDARP7Ys6khh3r6JdP_IJPhvONIPfE7JGsm5mFPObI"
+  }
 };
 
 export const viewport: Viewport = {
