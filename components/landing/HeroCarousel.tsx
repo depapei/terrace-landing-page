@@ -115,9 +115,9 @@ export function HeroCarousel({ slides, intro }: { slides: LandingHeroSlide[]; in
 
       <div className="hero-inset-x absolute bottom-7 z-[4] flex items-center justify-between gap-5 max-mobile:bottom-5">
         <p aria-live={autoplay ? "off" : "polite"} className="m-0 text-white/68">
-          <span className="block text-[11px] uppercase tracking-[1px] max-mobile:max-w-[120px] max-mobile:text-[9px] max-mobile:leading-normal">
+          {/* <span className="block text-[11px] uppercase tracking-[1px] max-mobile:max-w-[120px] max-mobile:text-[9px] max-mobile:leading-normal">
             {active.caption} / {pad(index + 1)}
-          </span>
+          </span> */}
           {active.subtitle && (
             <span className="mt-1 block max-w-[420px] text-xs text-white/60 max-mobile:hidden">
               {active.subtitle}
