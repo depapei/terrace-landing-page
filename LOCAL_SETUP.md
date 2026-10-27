@@ -1,6 +1,6 @@
 # Local clone and build guide (Windows PowerShell)
 
-This document records the initial workstation setup. For the current Lead Management branch, prepared migration, and verification results, use [LEAD_MANAGEMENT.md](LEAD_MANAGEMENT.md). The lead migration remains unapplied; the owner must run it separately.
+This document records the initial workstation setup. Lead Management handoff instructions and verification results are shared separately. The lead migration remains unapplied; the owner must run it separately.
 
 ## Verified results (October 27, 2026)
 
