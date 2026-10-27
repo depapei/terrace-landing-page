@@ -9,6 +9,7 @@
     "preview": "prisma generate && next build && next start",
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",
+    "test:leads": "bun test tests/leads.test.js",
     "postinstall": "prisma generate",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",

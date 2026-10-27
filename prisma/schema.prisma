@@ -158,3 +158,54 @@ model PortfolioImage {
 
   @@index([portfolioItemId, sortOrder])
 }
+
+enum LeadSource {
+  POTENTIAL
+  SELF_FORM
+}
+
+enum LeadContactType {
+  EMAIL
+  WHATSAPP
+  INSTAGRAM
+  WEBSITE
+  GOOGLE_MAPS
+  OTHER
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  FOLLOW_UP
+  INTERESTED
+  CONVERTED
+  LOST
+}
+
+model Lead {
+  id             String          @id @default(cuid())
+  companyName    String          @db.VarChar(160)
+  contactType    LeadContactType
+  contactValue   String          @db.VarChar(500)
+  requirements   String?         @db.VarChar(2000)
+  internalNotes  String?         @db.VarChar(5000)
+  source         LeadSource
+  status         LeadStatus      @default(NEW)
+  // Public submission retries reuse a random UUID; manual leads leave these null.
+  submissionKey  String?         @unique @db.VarChar(36)
+  submissionHash String?         @db.VarChar(64)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  @@index([source, createdAt, id])
+  @@index([source, status, createdAt, id])
+}
+
+// Separate from login throttling so public inquiries cannot affect admin login.
+model LeadSubmissionLimit {
+  key     String   @id @db.VarChar(64)
+  count   Int
+  resetAt DateTime
+
+  @@index([resetAt])
+}

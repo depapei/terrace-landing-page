@@ -10,6 +10,7 @@ import { adminButton } from "./ui";
 
 const nav = [
   { href: "/admin", label: "Dashboard" },
+  { href: "/admin/leads", label: "Lead Management" },
   { href: "/admin/hero", label: "Hero" },
   { href: "/admin/solutions", label: "Solusi & paket" },
   { href: "/admin/portfolio", label: "Hasil kerja" },

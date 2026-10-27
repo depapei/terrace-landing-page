@@ -6,6 +6,8 @@ Landing page for **Terrace / PT. Teras Teknologi** with an admin CMS for hero sl
 
 Design references are in [`doc/`](doc/): [`DESIGN.md`](doc/DESIGN.md) is the design system and [`index.html`](doc/index.html) is the original static mockup.
 
+Lead Management adds manual prospects and public inquiry submissions. See [`LEAD_MANAGEMENT.md`](LEAD_MANAGEMENT.md) for the prepared migration, owner-run setup steps, configuration, and verification checklist. The lead migration has been prepared but has not been applied by the agent; apply it before using `/admin/leads` or the public inquiry form.
+
 ## Requirements
 
 - [Bun](https://bun.sh) 1.4+ (package manager and script runner) and Node.js 20+

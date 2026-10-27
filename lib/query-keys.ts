@@ -6,4 +6,5 @@ export const queryKeys = {
   partners: ["admin", "partners"] as const,
   achievements: ["admin", "achievements"] as const,
   portfolio: ["admin", "portfolio"] as const,
+  leads: ["admin", "leads"] as const,
 };
