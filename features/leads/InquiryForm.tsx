@@ -52,7 +52,7 @@ export function InquiryForm() {
           ? "Lanjutkan percakapan di WhatsApp. Jika tab baru tidak terbuka, gunakan tombol di bawah. Anda masih perlu menekan Kirim di WhatsApp."
           : "Tim Terrace akan meninjau kebutuhan Anda dan menghubungi kontak yang diberikan."}
       </p>
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap gap-3 mt-2">
         {result.whatsappUrl && <a href={result.whatsappUrl} target="_blank" rel="noopener noreferrer" className={buttonClass("ink")}>Lanjutkan ke WhatsApp</a>}
         <button type="button" className={buttonClass("outline")} onClick={() => { reset(); attempt.current = null; setResult(null); }}>Kirim kebutuhan lain</button>
       </div>
@@ -67,7 +67,7 @@ export function InquiryForm() {
       <fieldset disabled={isSubmitting} className="m-0 grid min-w-0 gap-4 border-0 p-0 disabled:opacity-60">
         <div>
           <label htmlFor="inquiry-company" className="text-sm font-semibold">Nama perusahaan / bisnis</label>
-          <input id="inquiry-company" autoComplete="organization" maxLength={160} {...register("companyName")} required className={inputClass} aria-invalid={!!errors.companyName} aria-describedby={errors.companyName ? "inquiry-company-error" : undefined} />
+          <input id="inquiry-company" autoComplete="organization" maxLength={160} {...register("companyName")} required className={inputClass} aria-invalid={!!errors.companyName} aria-describedby={errors.companyName ? "inquiry-company-error" : undefined} placeholder="Terrace Tech" />
           {errors.companyName && <p id="inquiry-company-error" className="mt-1 text-sm text-red-800">{errors.companyName.message}</p>}
         </div>
         <div>
@@ -77,8 +77,8 @@ export function InquiryForm() {
           </select>
         </div>
         <div>
-          <label htmlFor="inquiry-contact" className="text-sm font-semibold">Nomor WhatsApp atau email</label>
-          <input id="inquiry-contact" type="text" maxLength={500} {...register("contactValue")} required className={inputClass} aria-invalid={!!errors.contactValue} aria-describedby="inquiry-contact-hint inquiry-contact-error" />
+          <label htmlFor="inquiry-contact" className="text-sm font-semibold">Nomor WhatsApp atau Email</label>
+          <input id="inquiry-contact" type="text" maxLength={500} {...register("contactValue")} required className={inputClass} aria-invalid={!!errors.contactValue} aria-describedby="inquiry-contact-hint inquiry-contact-error" placeholder="Masukan no. Whatsapp atau Email anda" />
           <p id="inquiry-contact-hint" className="mt-1 mb-0 text-xs text-muted">Untuk WhatsApp, sertakan kode negara, contoh +6281234567890.</p>
           <p id="inquiry-contact-error" className="mt-1 mb-0 text-sm text-red-800">{errors.contactValue?.message}</p>
         </div>
